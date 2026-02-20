@@ -6,7 +6,7 @@
  */
 
 import { writeFile, mkdir } from 'node:fs/promises';
-import { generateAppId } from './app-id.js';
+import { generateAppId, generateAppIdFromName } from './app-id.js';
 import { resolveAppPaths } from './xdg-paths.js';
 import { generateDesktopEntry } from './desktop-entry.js';
 import { buildAppMetadata } from './app-metadata.js';
@@ -25,6 +25,7 @@ import { downloadIcon } from './icon-downloader.js';
 /**
  * @typedef {{
  *   wrapperPath: string,
+ *   customName?: string,
  * }} InstallOptions
  */
 
@@ -44,12 +45,15 @@ import { downloadIcon } from './icon-downloader.js';
  * @returns {Promise<{ success: true, data: AppMetadata } | { success: false, error: string }>}
  */
 export async function installApp(classifyResult, options) {
-  // Step 1: Generate app ID
-  const idResult = generateAppId(classifyResult.finalUrl);
+  // Step 1: Generate app ID (from custom name or URL)
+  const idResult = options.customName
+    ? generateAppIdFromName(options.customName)
+    : generateAppId(classifyResult.finalUrl);
   if (!idResult.success) {
     return { success: false, error: `App ID: ${idResult.error}` };
   }
   const appId = idResult.data;
+  const displayName = options.customName || classifyResult.metadata.name;
 
   // Step 2: Determine icon extension from source
   const iconSource = classifyResult.metadata.iconUrl;
@@ -71,7 +75,7 @@ export async function installApp(classifyResult, options) {
 
   // Step 5: Generate .desktop entry
   const desktopResult = generateDesktopEntry({
-    name: classifyResult.metadata.name,
+    name: displayName,
     exec: `${options.wrapperPath} ${appId} ${classifyResult.finalUrl}`,
     icon: paths.iconFile,
     comment: `Web app: ${classifyResult.finalUrl}`,
@@ -92,7 +96,7 @@ export async function installApp(classifyResult, options) {
   // Step 7: Build metadata
   const metaResult = buildAppMetadata({
     appId,
-    name: classifyResult.metadata.name,
+    name: displayName,
     url: classifyResult.finalUrl,
     level: classifyResult.classification.level,
     iconPath: paths.iconFile,

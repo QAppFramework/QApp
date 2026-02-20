@@ -10,6 +10,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { validateAppMetadata } from './app-metadata.js';
+import { recoverApps } from './app-recovery.js';
 
 /** @typedef {import('./app-metadata.js').AppMetadata} AppMetadata */
 
@@ -23,6 +24,9 @@ import { validateAppMetadata } from './app-metadata.js';
  * @returns {Promise<{ success: true, data: AppMetadata[] } | { success: false, error: string }>}
  */
 export async function listInstalledApps() {
+  // Auto-recover: rebuild metadata from .desktop files if missing
+  await recoverApps();
+
   const appsDir = join(homedir(), '.local', 'share', 'qapp', 'apps');
 
   /** @type {string[]} */

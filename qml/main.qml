@@ -10,7 +10,7 @@ ApplicationWindow {
     minimumWidth: 400
     minimumHeight: 300
     visible: true
-    title: "PWAApp"
+    title: "QApp"
 
     // URL validation — matches http(s)://domain.tld with optional path
     // Canonical logic: src/url-validator.js (keep in sync)
@@ -41,34 +41,198 @@ ApplicationWindow {
         id: appInstaller
     }
 
-    header: ToolBar {
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 12
+    // ── Hamburger menu (F10) ────────────────────────────────
+    Shortcut {
+        sequence: "F10"
+        onActivated: mainMenu.popup()
+    }
 
-            Label {
-                text: "PWAApp"
-                font.pixelSize: 18
-                font.bold: true
-            }
+    Menu {
+        id: mainMenu
 
-            Item { Layout.fillWidth: true }
+        Action {
+            text: "Update QApp"
+            enabled: !appInstaller.busy
+            onTriggered: updateDialog.open()
+        }
+
+        MenuSeparator {}
+
+        Action {
+            text: "About QApp"
+            onTriggered: aboutDialog.open()
+        }
+
+        Action {
+            text: "License (EUPL v1.2)"
+            onTriggered: Qt.openUrlExternally("https://eupl.eu/1.2/en/")
         }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 20
-        spacing: 16
+    // ── Update dialog ───────────────────────────────────────
+    Dialog {
+        id: updateDialog
+        title: "Update QApp"
+        anchors.centerIn: parent
+        width: 400
+        modal: true
+        standardButtons: appInstaller.busy ? Dialog.NoButton : Dialog.Close
 
-        Item { Layout.fillHeight: true }
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 16
 
-        Label {
-            text: "Enter a URL to classify"
-            font.pixelSize: 14
-            Layout.alignment: Qt.AlignHCenter
-            opacity: 0.7
+            Label {
+                text: appInstaller.busy
+                    ? "Updating QApp..."
+                    : (appInstaller.updateStatus.length > 0
+                        ? appInstaller.updateStatus
+                        : "Check for updates from GitHub and install the latest version.\nAll wrapper apps will be updated.")
+                font.pixelSize: 13
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            BusyIndicator {
+                Layout.alignment: Qt.AlignHCenter
+                running: appInstaller.busy
+                visible: appInstaller.busy
+            }
+
+            Label {
+                visible: appInstaller.busy && appInstaller.updateStatus.length > 0
+                text: appInstaller.updateStatus
+                font.pixelSize: 11
+                opacity: 0.6
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: "Update now"
+                Layout.alignment: Qt.AlignHCenter
+                visible: !appInstaller.busy && !appInstaller.updateStatus.startsWith("Updated!")
+                onClicked: appInstaller.updateQApp()
+            }
         }
+    }
+
+    // ── About dialog ────────────────────────────────────────
+    Dialog {
+        id: aboutDialog
+        title: "About QApp"
+        anchors.centerIn: parent
+        width: 340
+        modal: true
+        standardButtons: Dialog.Close
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 12
+
+            Label {
+                text: "QApp"
+                font.pixelSize: 20
+                font.bold: true
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Label {
+                text: "Turn any website into a standalone desktop app"
+                font.pixelSize: 12
+                opacity: 0.7
+                Layout.alignment: Qt.AlignHCenter
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            Label {
+                text: "Version 0.1.0-alpha"
+                font.pixelSize: 11
+                opacity: 0.5
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: palette.mid
+            }
+
+            Label {
+                text: "<a href=\"https://northheim.com/\">Northheim</a>"
+                font.pixelSize: 12
+                Layout.alignment: Qt.AlignHCenter
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
+            Label {
+                text: "Licensed under <a href=\"https://eupl.eu/1.2/en/\">EUPL v1.2</a>"
+                font.pixelSize: 11
+                opacity: 0.6
+                Layout.alignment: Qt.AlignHCenter
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+        }
+    }
+
+    header: ToolBar {
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 0
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 12
+
+                Label {
+                    text: "QApp"
+                    font.pixelSize: 18
+                    font.bold: true
+                }
+
+                Item { Layout.fillWidth: true }
+
+                ToolButton {
+                    text: "\u2630"
+                    font.pixelSize: 16
+                    onClicked: mainMenu.popup()
+                }
+            }
+
+            TabBar {
+                id: tabBar
+                Layout.fillWidth: true
+
+                TabButton {
+                    text: "Install"
+                }
+                TabButton {
+                    text: "Manage"
+                    onClicked: appInstaller.listApps()
+                }
+            }
+        }
+    }
+
+    StackLayout {
+        anchors.fill: parent
+        currentIndex: tabBar.currentIndex
+
+        // ── Install tab ──────────────────────────────────────────
+        ColumnLayout {
+            Layout.margins: 20
+            spacing: 16
+
+            Item { Layout.fillHeight: true }
+
+            Label {
+                text: "Enter a URL to install as app"
+                font.pixelSize: 14
+                Layout.alignment: Qt.AlignHCenter
+                opacity: 0.7
+            }
 
         RowLayout {
             Layout.fillWidth: true
@@ -306,7 +470,122 @@ ApplicationWindow {
             visible: appInstaller.busy
         }
 
-        Item { Layout.fillHeight: true }
+            Item { Layout.fillHeight: true }
+        }
+
+        // ── Manage tab ───────────────────────────────────────────
+        ColumnLayout {
+            Layout.margins: 20
+            spacing: 16
+
+            Label {
+                text: appInstaller.installedApps.length === 0 && !appInstaller.busy
+                    ? "No apps installed"
+                    : appInstaller.installedApps.length + " installed app" + (appInstaller.installedApps.length !== 1 ? "s" : "")
+                font.pixelSize: 14
+                Layout.alignment: Qt.AlignHCenter
+                opacity: 0.7
+            }
+
+            ListView {
+                id: appListView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.maximumWidth: 500
+                Layout.alignment: Qt.AlignHCenter
+                clip: true
+                spacing: 8
+                model: appInstaller.installedApps
+
+                delegate: Rectangle {
+                    required property var modelData
+                    required property int index
+                    width: appListView.width
+                    height: delegateRow.implicitHeight + 24
+                    radius: 8
+                    color: palette.alternateBase
+                    border.width: 1
+                    border.color: palette.mid
+
+                    RowLayout {
+                        id: delegateRow
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 12
+
+                        // Level badge
+                        Rectangle {
+                            width: 48
+                            height: 24
+                            radius: 4
+                            color: {
+                                var level = modelData.level || "";
+                                if (level === "PWAPP") return "#4caf50";
+                                if (level === "WAPP") return "#2196f3";
+                                return "#9e9e9e";
+                            }
+
+                            Label {
+                                anchors.centerIn: parent
+                                text: modelData.level || "WS"
+                                font.pixelSize: 11
+                                font.bold: true
+                                color: "white"
+                            }
+                        }
+
+                        // App info
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+
+                            Label {
+                                text: modelData.name || modelData.appId
+                                font.pixelSize: 14
+                                font.bold: true
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+
+                            Label {
+                                text: modelData.url || ""
+                                font.pixelSize: 11
+                                opacity: 0.6
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        // Launch button
+                        Button {
+                            text: "Open"
+                            font.pixelSize: 12
+
+                            onClicked: {
+                                appInstaller.launch(modelData.appId, modelData.url)
+                            }
+                        }
+
+                        // Remove button
+                        Button {
+                            text: "Remove"
+                            font.pixelSize: 12
+                            enabled: !appInstaller.busy
+
+                            onClicked: {
+                                appInstaller.uninstall(modelData.appId);
+                            }
+                        }
+                    }
+                }
+            }
+
+            BusyIndicator {
+                Layout.alignment: Qt.AlignHCenter
+                running: appInstaller.busy
+                visible: appInstaller.busy
+            }
+        }
     }
 
     footer: ToolBar {

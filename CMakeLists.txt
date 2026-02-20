@@ -34,13 +34,18 @@ target_link_libraries(pwaapp PRIVATE
 # --- qapp-wrapper: standalone WebEngine launcher for installed apps ---
 qt_add_executable(qapp-wrapper
     src/qapp-wrapper-main.cpp
+    src/wrapper-helper.hpp
+    src/wrapper-helper.cpp
 )
+
+target_include_directories(qapp-wrapper PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 qt_add_qml_module(qapp-wrapper
     URI QAppWrapper
     VERSION 1.0
     QML_FILES
         qml/wrapper.qml
+        qml/WrapperTab.qml
 )
 
 target_link_libraries(qapp-wrapper PRIVATE

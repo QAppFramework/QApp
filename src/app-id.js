@@ -47,3 +47,33 @@ export function generateAppId(url) {
 
   return { success: true, data: appId };
 }
+
+/**
+ * Generate an app ID from a custom name string.
+ *
+ * Rules:
+ * - Lowercase
+ * - Non-alphanumeric characters replaced with hyphens
+ * - Collapse multiple hyphens
+ * - Trim leading/trailing hyphens
+ *
+ * @param {string} name - A human-readable app name.
+ * @returns {{ success: true, data: string } | { success: false, error: string }}
+ */
+export function generateAppIdFromName(name) {
+  const trimmed = name.trim();
+  if (trimmed.length === 0) {
+    return { success: false, error: 'App name must not be empty' };
+  }
+
+  const slug = trimmed
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  if (slug.length === 0) {
+    return { success: false, error: 'App name must contain at least one alphanumeric character' };
+  }
+
+  return { success: true, data: slug };
+}

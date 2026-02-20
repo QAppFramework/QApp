@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
+#include <QJsonArray>
 #include <QtQml/qqmlregistration.h>
 
 class AppInstaller : public QObject
@@ -17,6 +18,8 @@ class AppInstaller : public QObject
     Q_PROPERTY(QString appName READ appName NOTIFY resultChanged)
     Q_PROPERTY(QString desktopPath READ desktopPath NOTIFY resultChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY resultChanged)
+    Q_PROPERTY(QJsonArray installedApps READ installedApps NOTIFY installedAppsChanged)
+    Q_PROPERTY(QString updateStatus READ updateStatus NOTIFY updateStatusChanged)
 
 public:
     explicit AppInstaller(QObject *parent = nullptr);
@@ -27,17 +30,26 @@ public:
     QString appName() const { return m_appName; }
     QString desktopPath() const { return m_desktopPath; }
     QString errorMessage() const { return m_errorMessage; }
+    QJsonArray installedApps() const { return m_installedApps; }
+    QString updateStatus() const { return m_updateStatus; }
 
     Q_INVOKABLE void install(const QString &url);
     Q_INVOKABLE void uninstall(const QString &appId);
+    Q_INVOKABLE void listApps();
+    Q_INVOKABLE void launch(const QString &appId, const QString &url);
+    Q_INVOKABLE void updateQApp();
 
 signals:
     void busyChanged();
     void resultChanged();
+    void installedAppsChanged();
+    void updateStatusChanged();
 
 private slots:
     void onInstallFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onUninstallFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onListFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
     void clearResult();
@@ -49,6 +61,8 @@ private:
     QString m_appName;
     QString m_desktopPath;
     QString m_errorMessage;
+    QJsonArray m_installedApps;
+    QString m_updateStatus;
 };
 
 #endif // APP_INSTALLER_BRIDGE_HPP

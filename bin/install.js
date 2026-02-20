@@ -3,7 +3,7 @@
 /**
  * CLI entry point for app installation.
  *
- * Usage: node bin/install.js <url> [--wrapper-path <path>]
+ * Usage: node bin/install.js <url> [--wrapper-path <path>] [--name <name>]
  * Runs classifyUrl → installApp → JSON stdout.
  * Exit 0 on success, 1 on error.
  */
@@ -12,10 +12,18 @@ import { classifyUrl } from '../src/classify-pipeline.js';
 import { installApp } from '../src/app-installer.js';
 
 const args = process.argv.slice(2);
-const url = args.find((a) => !a.startsWith('--'));
+// Find URL: first arg that isn't a flag or a flag value
+const flagIndices = new Set();
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--wrapper-path' || args[i] === '--name') {
+    flagIndices.add(i);
+    flagIndices.add(i + 1);
+  }
+}
+const url = args.find((_, i) => !flagIndices.has(i) && !args[i].startsWith('--'));
 
 if (!url) {
-  process.stderr.write('Usage: node bin/install.js <url> [--wrapper-path <path>]\n');
+  process.stderr.write('Usage: node bin/install.js <url> [--wrapper-path <path>] [--name <name>]\n');
   process.exit(1);
 }
 
@@ -33,8 +41,16 @@ if (!classifyResult.success) {
   process.exit(1);
 }
 
+// Parse --name option
+/** @type {string | undefined} */
+let customName;
+const nameIdx = args.indexOf('--name');
+if (nameIdx !== -1 && args[nameIdx + 1]) {
+  customName = /** @type {string} */ (args[nameIdx + 1]);
+}
+
 // Step 2: Install the app
-const installResult = await installApp(classifyResult.data, { wrapperPath });
+const installResult = await installApp(classifyResult.data, { wrapperPath, customName });
 if (!installResult.success) {
   process.stdout.write(JSON.stringify({ error: installResult.error }, null, 2) + '\n');
   process.exit(1);
