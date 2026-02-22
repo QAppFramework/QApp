@@ -20,6 +20,8 @@ class AppInstaller : public QObject
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY resultChanged)
     Q_PROPERTY(QJsonArray installedApps READ installedApps NOTIFY installedAppsChanged)
     Q_PROPERTY(QString updateStatus READ updateStatus NOTIFY updateStatusChanged)
+    Q_PROPERTY(QJsonArray appUpdates READ appUpdates NOTIFY appUpdatesChanged)
+    Q_PROPERTY(bool checkingUpdates READ checkingUpdates NOTIFY checkingUpdatesChanged)
 
 public:
     explicit AppInstaller(QObject *parent = nullptr);
@@ -32,24 +34,31 @@ public:
     QString errorMessage() const { return m_errorMessage; }
     QJsonArray installedApps() const { return m_installedApps; }
     QString updateStatus() const { return m_updateStatus; }
+    QJsonArray appUpdates() const { return m_appUpdates; }
+    bool checkingUpdates() const { return m_checkingUpdates; }
 
     Q_INVOKABLE void install(const QString &url);
+    Q_INVOKABLE void installFromData(const QString &classifyResultJson);
     Q_INVOKABLE void uninstall(const QString &appId);
     Q_INVOKABLE void listApps();
     Q_INVOKABLE void launch(const QString &appId, const QString &url);
     Q_INVOKABLE void updateQApp();
+    Q_INVOKABLE void checkUpdates();
 
 signals:
     void busyChanged();
     void resultChanged();
     void installedAppsChanged();
     void updateStatusChanged();
+    void appUpdatesChanged();
+    void checkingUpdatesChanged();
 
 private slots:
     void onInstallFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onUninstallFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onListFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onCheckUpdatesFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
     void clearResult();
@@ -63,6 +72,9 @@ private:
     QString m_errorMessage;
     QJsonArray m_installedApps;
     QString m_updateStatus;
+    QJsonArray m_appUpdates;
+    bool m_checkingUpdates = false;
+    QProcess *m_checkProcess = nullptr;
 };
 
 #endif // APP_INSTALLER_BRIDGE_HPP

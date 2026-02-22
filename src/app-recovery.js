@@ -35,9 +35,9 @@ function parseDesktopFile(content) {
   const parts = exec.split(/\s+/);
   if (parts.length < 3) return null;
 
-  const wrapperPath = parts[0];
-  const appId = parts[1];
-  const url = parts[2];
+  const wrapperPath = /** @type {string} */ (parts[0]);
+  const appId = /** @type {string} */ (parts[1]);
+  const url = /** @type {string} */ (parts[2]);
 
   if (!appId || !url) return null;
 
@@ -59,7 +59,7 @@ function parseDesktopFile(content) {
 export async function recoverApps(options = {}) {
   const home = options.homeDir || homedir();
   const desktopDir = join(home, '.local', 'share', 'applications');
-  const appsDir = join(home, '.local', 'share', 'qapp', 'apps');
+  const appsDir = join(home, '.local', 'share', 'qapp-framework', 'apps');
 
   // Ensure apps dir exists
   await mkdir(appsDir, { recursive: true });
@@ -73,9 +73,7 @@ export async function recoverApps(options = {}) {
     return { success: true, data: { recovered: [] } };
   }
 
-  const qappFiles = files.filter(
-    (f) => f.startsWith('qapp-') && f.endsWith('.desktop')
-  );
+  const qappFiles = files.filter((f) => f.startsWith('qapp-') && f.endsWith('.desktop'));
 
   /** @type {string[]} */
   const recovered = [];

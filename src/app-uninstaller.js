@@ -24,7 +24,7 @@ export async function uninstallApp(appId) {
   }
 
   const home = homedir();
-  const metadataPath = join(home, '.local', 'share', 'qapp', 'apps', `${appId}.json`);
+  const metadataPath = join(home, '.local', 'share', 'qapp-framework', 'apps', `${appId}.json`);
 
   // Read metadata to find all files
   /** @type {string} */

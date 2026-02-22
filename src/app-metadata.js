@@ -18,6 +18,10 @@ export const AppMetadataSchema = v.object({
   desktopPath: v.string(),
   wrapperPath: v.string(),
   installedAt: v.pipe(v.string(), v.isoTimestamp()),
+  displayMode: v.optional(v.picklist(['fullscreen', 'standalone', 'minimal-ui', 'browser'])),
+  themeColor: v.optional(v.pipe(v.string(), v.minLength(1))),
+  startUrl: v.optional(v.pipe(v.string(), v.minLength(1))),
+  scope: v.optional(v.pipe(v.string(), v.minLength(1))),
 });
 
 /** @typedef {v.InferOutput<typeof AppMetadataSchema>} AppMetadata */
@@ -31,6 +35,10 @@ export const AppMetadataSchema = v.object({
  *   iconPath: string,
  *   desktopPath: string,
  *   wrapperPath: string,
+ *   displayMode?: string,
+ *   themeColor?: string,
+ *   startUrl?: string,
+ *   scope?: string,
  * }} AppMetadataInput
  */
 

@@ -1,5 +1,5 @@
 /**
- * URL validation for PWAApp.
+ * URL validation for QApp.
  *
  * Canonical source of truth for URL validation logic.
  * The same regex pattern is duplicated in qml/main.qml for QML use.

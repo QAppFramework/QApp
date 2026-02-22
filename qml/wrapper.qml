@@ -40,17 +40,39 @@ ApplicationWindow {
         property string savedTabs: ""
     }
 
+    // Profile settings (shared across all wrapper instances)
+    Settings {
+        id: profileSettings
+        category: "profile"
+        property int cacheSizeMB: 500
+        property int jsHeapSizeMB: 4096
+        property string userAgent: ""
+    }
+
+    property string _defaultUA: ""
+
     WebEngineProfile {
         id: appProfile
         storageName: root.appId
         offTheRecord: false
         persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
         httpCacheType: WebEngineProfile.DiskHttpCache
+        httpCacheMaximumSize: profileSettings.cacheSizeMB * 1048576
     }
 
     WrapperHelper {
         id: helper
     }
+
+    // ── Display mode properties ─────────────────────────────
+    readonly property string effectiveDisplayMode: helper.metadataLoaded ? helper.displayMode : ""
+    readonly property bool isBrowserMode: effectiveDisplayMode === "" || effectiveDisplayMode === "browser"
+    readonly property bool isStandalone: effectiveDisplayMode === "standalone"
+    readonly property bool isMinimalUi: effectiveDisplayMode === "minimal-ui"
+    readonly property bool isFullscreen: effectiveDisplayMode === "fullscreen"
+    readonly property bool showTabs: isBrowserMode
+    readonly property bool showNewTabButton: isBrowserMode
+    readonly property bool showSaveAsApp: isBrowserMode
 
     ListModel {
         id: tabModel
@@ -86,23 +108,55 @@ ApplicationWindow {
     function addTab(url) {
         var component = Qt.createComponent("WrapperTab.qml")
         if (component.status === Component.Ready) {
+            var scopeUrl = helper.scope || ""
             var view = component.createObject(tabStack, {
                 "profile": appProfile,
                 "url": url,
-                "visible": false
+                "visible": false,
+                "appScope": scopeUrl
             })
-            tabModel.append({ "tabTitle": "Loading...", "tabUrl": url })
-            var idx = tabModel.count - 1
-            view.titleChanged.connect(function() {
-                if (idx < tabModel.count)
-                    tabModel.set(idx, { "tabTitle": view.title || "Untitled" })
-            })
-            view.openInNewTab.connect(function(newUrl) {
-                addTab(newUrl)
-            })
-            tabBar.currentIndex = idx
-            updateVisibility()
+            connectTab(view, url)
         }
+    }
+
+    // Open a window.open request in a new tab (preserves window.opener)
+    function addTabFromRequest(request) {
+        var component = Qt.createComponent("WrapperTab.qml")
+        if (component.status === Component.Ready) {
+            var scopeUrl = helper.scope || ""
+            var view = component.createObject(tabStack, {
+                "profile": appProfile,
+                "visible": false,
+                "appScope": scopeUrl
+            })
+            request.openIn(view)
+            connectTab(view, request.requestedUrl.toString())
+        }
+    }
+
+    function connectTab(view, url) {
+        tabModel.append({ "tabTitle": "Loading...", "tabUrl": url })
+        var idx = tabModel.count - 1
+        view.titleChanged.connect(function() {
+            if (idx < tabModel.count)
+                tabModel.set(idx, { "tabTitle": view.title || "Untitled" })
+        })
+        view.openInNewTab.connect(function(newUrl) {
+            addTab(newUrl)
+        })
+        view.openRequestInNewTab.connect(function(req) {
+            addTabFromRequest(req)
+        })
+        // Auto-close tab when window.close() is called (OAuth callback)
+        view.windowCloseRequested.connect(function() {
+            var tabIdx = -1
+            for (var i = 0; i < tabStack.children.length; i++) {
+                if (tabStack.children[i] === view) { tabIdx = i; break }
+            }
+            if (tabIdx >= 0 && tabModel.count > 1) closeTab(tabIdx)
+        })
+        tabBar.currentIndex = idx
+        updateVisibility()
     }
 
     function closeTab(index) {
@@ -137,22 +191,95 @@ ApplicationWindow {
         }
     }
 
-    Component.onCompleted: restoreTabs()
+    Component.onCompleted: {
+        // Capture default UA, then apply clean version (strips QtWebEngine tag)
+        root._defaultUA = appProfile.httpUserAgent
+        appProfile.httpUserAgent = profileSettings.userAgent.length > 0
+            ? profileSettings.userAgent
+            : root._defaultUA.replace(/QtWebEngine\/[\d.]+ /, "")
+
+        helper.loadMetadata(root.appId)
+        restoreTabs()
+        if (root.isFullscreen) root.showFullScreen()
+    }
     onClosing: saveTabs()
+
+    // ── Theme color helpers ─────────────────────────────────
+    function parseHexColor(hex) {
+        if (!hex || hex.length < 4) return null
+        var c = hex.replace("#", "")
+        if (c.length === 3)
+            c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2]
+        if (c.length !== 6) return null
+        var r = parseInt(c.substring(0, 2), 16) / 255.0
+        var g = parseInt(c.substring(2, 4), 16) / 255.0
+        var b = parseInt(c.substring(4, 6), 16) / 255.0
+        return { r: r, g: g, b: b }
+    }
+
+    readonly property bool hasThemeColor: helper.themeColor.length > 0
+    readonly property var themeRgb: hasThemeColor ? parseHexColor(helper.themeColor) : null
+    readonly property bool darkTheme: {
+        if (!themeRgb) return false
+        var lum = 0.299 * themeRgb.r + 0.587 * themeRgb.g + 0.114 * themeRgb.b
+        return lum < 0.5
+    }
 
     // ── Header: TabBar ──────────────────────────────────────
     header: ToolBar {
+        id: headerToolBar
+        visible: !root.isFullscreen
+
+        background: Rectangle {
+            color: root.hasThemeColor ? helper.themeColor : palette.window
+        }
+
+        palette.buttonText: root.darkTheme ? "#ffffff" : palette.buttonText
+        palette.windowText: root.darkTheme ? "#ffffff" : palette.windowText
+
         RowLayout {
             anchors.fill: parent
             spacing: 0
 
+            // ── Back/Forward for minimal-ui ──────────────
+            ToolButton {
+                text: "\u25C0"
+                font.pixelSize: 14
+                implicitWidth: 36
+                visible: root.isMinimalUi
+                enabled: {
+                    var view = tabStack.children[tabBar.currentIndex]
+                    return view ? view.canGoBack : false
+                }
+                onClicked: {
+                    var view = tabStack.children[tabBar.currentIndex]
+                    if (view) view.goBack()
+                }
+            }
+
+            ToolButton {
+                text: "\u25B6"
+                font.pixelSize: 14
+                implicitWidth: 36
+                visible: root.isMinimalUi
+                enabled: {
+                    var view = tabStack.children[tabBar.currentIndex]
+                    return view ? view.canGoForward : false
+                }
+                onClicked: {
+                    var view = tabStack.children[tabBar.currentIndex]
+                    if (view) view.goForward()
+                }
+            }
+
+            // ── TabBar (browser mode only) ───────────────
             TabBar {
                 id: tabBar
                 Layout.fillWidth: true
+                visible: root.showTabs
 
                 onCurrentIndexChanged: {
                     updateVisibility()
-                    // Update window title
                     if (tabBar.currentIndex >= 0 && tabBar.currentIndex < tabStack.children.length) {
                         var current = tabStack.children[tabBar.currentIndex]
                         if (current) root.title = current.title || root.appId
@@ -187,11 +314,19 @@ ApplicationWindow {
                 }
             }
 
+            // ── Spacer for non-tabbed modes ──────────────
+            Item {
+                Layout.fillWidth: true
+                visible: !root.showTabs
+            }
+
+            // ── New tab button (browser mode only) ───────
             ToolButton {
                 text: "+"
                 font.pixelSize: 16
                 font.bold: true
                 implicitWidth: 36
+                visible: root.showNewTabButton
                 onClicked: addTab(root.startUrl)
             }
 
@@ -211,13 +346,39 @@ ApplicationWindow {
         onActivated: hamburgerMenu.popup()
     }
 
+    // ── Fullscreen toggle (F11) ──────────────────────────
+    Shortcut {
+        sequence: "F11"
+        onActivated: {
+            if (root.visibility === ApplicationWindow.FullScreen) {
+                root.showNormal()
+                headerToolBar.visible = !root.isFullscreen
+            } else {
+                root.showFullScreen()
+                headerToolBar.visible = false
+            }
+        }
+    }
+
     Menu {
         id: hamburgerMenu
 
-        Action {
+        MenuItem {
             text: "Save as app..."
+            visible: root.showSaveAsApp
+            height: visible ? implicitHeight : 0
             enabled: !helper.busy && tabBar.currentIndex >= 0
             onTriggered: saveDialog.open()
+        }
+
+        MenuSeparator {
+            visible: root.showSaveAsApp
+            height: visible ? implicitHeight : 0
+        }
+
+        Action {
+            text: "Settings..."
+            onTriggered: settingsDialog.open()
         }
 
         MenuSeparator {}
@@ -289,6 +450,143 @@ ApplicationWindow {
                 opacity: 0.6
                 Layout.alignment: Qt.AlignHCenter
                 onLinkActivated: Qt.openUrlExternally(link)
+            }
+        }
+    }
+
+    // ── Settings dialog ──────────────────────────────────────
+    Dialog {
+        id: settingsDialog
+        title: "Settings"
+        anchors.centerIn: parent
+        width: 380
+        modal: true
+        standardButtons: Dialog.Close
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 16
+
+            Label {
+                text: "App: " + root.appId
+                font.pixelSize: 13
+                opacity: 0.7
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: palette.mid
+            }
+
+            Label {
+                text: "Clear all browsing data (cookies, cache, local storage) and return to start page."
+                font.pixelSize: 12
+                opacity: 0.6
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: "Clear data & restart"
+                Layout.alignment: Qt.AlignHCenter
+
+                onClicked: {
+                    tabSettings.savedTabs = ""
+                    helper.clearAppDataAndRestart(root.appId)
+                }
+            }
+
+            Rectangle { Layout.fillWidth: true; height: 1; color: palette.mid }
+
+            Label {
+                text: "Profile"
+                font.pixelSize: 14
+                font.bold: true
+            }
+
+            GridLayout {
+                columns: 2
+                columnSpacing: 12
+                rowSpacing: 8
+                Layout.fillWidth: true
+
+                Label { text: "HTTP cache (MB):"; font.pixelSize: 12 }
+                SpinBox {
+                    id: cacheSpin
+                    from: 100
+                    to: 10000
+                    stepSize: 100
+                    value: profileSettings.cacheSizeMB
+                    editable: true
+                    onValueModified: profileSettings.cacheSizeMB = value
+                }
+
+                Label { text: "JS heap (MB):"; font.pixelSize: 12 }
+                SpinBox {
+                    id: heapSpin
+                    from: 512
+                    to: 32768
+                    stepSize: 512
+                    value: profileSettings.jsHeapSizeMB
+                    editable: true
+                    onValueModified: profileSettings.jsHeapSizeMB = value
+                }
+
+                Label { text: "Browser identity:"; font.pixelSize: 12 }
+                ComboBox {
+                    id: uaCombo
+                    Layout.fillWidth: true
+                    font.pixelSize: 12
+                    model: [
+                        "Auto (Chrome-like)",
+                        "Chrome on Linux",
+                        "Firefox on Linux",
+                        "Edge on Linux",
+                        "Custom..."
+                    ]
+                    readonly property var uaStrings: [
+                        "",
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                        "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+                        "_custom_"
+                    ]
+                    Component.onCompleted: {
+                        var saved = profileSettings.userAgent
+                        if (saved.length === 0) { currentIndex = 0; return }
+                        for (var i = 1; i < uaStrings.length - 1; i++) {
+                            if (uaStrings[i] === saved) { currentIndex = i; return }
+                        }
+                        currentIndex = 4  // Custom
+                    }
+                    onActivated: function(index) {
+                        if (index < 4) {
+                            profileSettings.userAgent = uaStrings[index]
+                            customUaField.visible = false
+                        } else {
+                            customUaField.visible = true
+                            customUaField.forceActiveFocus()
+                        }
+                    }
+                }
+
+                Item { width: 1; height: 1; visible: customUaField.visible }
+                TextField {
+                    id: customUaField
+                    Layout.fillWidth: true
+                    font.pixelSize: 11
+                    placeholderText: "Paste full UA string"
+                    visible: uaCombo.currentIndex === 4
+                    text: uaCombo.currentIndex === 4 ? profileSettings.userAgent : ""
+                    onEditingFinished: profileSettings.userAgent = text
+                }
+            }
+
+            Label {
+                text: "UA/heap changes require restart."
+                font.pixelSize: 11
+                opacity: 0.4
             }
         }
     }

@@ -6,6 +6,8 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
+class WebFetcher;
+
 class SiteClassifier : public QObject
 {
     Q_OBJECT
@@ -22,6 +24,8 @@ class SiteClassifier : public QObject
     Q_PROPERTY(bool hasServiceWorker READ hasServiceWorker NOTIFY resultChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY resultChanged)
     Q_PROPERTY(bool hasResult READ hasResult NOTIFY resultChanged)
+    Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
+    Q_PROPERTY(QString classifyResultJson READ classifyResultJson NOTIFY resultChanged)
 
 public:
     explicit SiteClassifier(QObject *parent = nullptr);
@@ -37,21 +41,33 @@ public:
     bool hasServiceWorker() const { return m_hasServiceWorker; }
     QString errorMessage() const { return m_errorMessage; }
     bool hasResult() const { return m_hasResult; }
+    QString statusMessage() const { return m_statusMessage; }
+    QString classifyResultJson() const { return m_classifyResultJson; }
 
     Q_INVOKABLE void classify(const QString &url);
 
 signals:
     void busyChanged();
     void resultChanged();
+    void statusMessageChanged();
 
 private slots:
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onFallbackProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
     void clearResult();
     void parseResult(const QByteArray &output);
+    bool shouldTryWebEngine(const QString &error);
+    void startWebEngineFallback();
+    void onWebFetchFinished(bool success, const QString &html, const QString &finalUrl,
+                            bool isHttps, const QString &manifestJson,
+                            bool swDetected, const QString &error);
+    void setStatusMessage(const QString &msg);
 
     QProcess *m_process = nullptr;
+    QProcess *m_fallbackProcess = nullptr;
+    WebFetcher *m_webFetcher = nullptr;
     bool m_busy = false;
     bool m_hasResult = false;
     QString m_level;
@@ -63,6 +79,9 @@ private:
     bool m_hasManifest = false;
     bool m_hasServiceWorker = false;
     QString m_errorMessage;
+    QString m_statusMessage;
+    QString m_pendingUrl;
+    QString m_classifyResultJson;
 };
 
 #endif // SITE_CLASSIFIER_BRIDGE_HPP

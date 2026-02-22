@@ -12,7 +12,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/QAppFramework/QApp.git"
-INSTALL_DIR="$HOME/.local/share/qapp"
+INSTALL_DIR="$HOME/.local/share/qapp-framework"
 BIN_DIR="$HOME/.local/bin"
 
 # Colors
@@ -64,7 +64,7 @@ info "All prerequisites met."
 
 SOURCE_DIR=""
 
-if [ -f "CMakeLists.txt" ] && [ -f "package.json" ] && grep -q "pwaapp" package.json 2>/dev/null; then
+if [ -f "CMakeLists.txt" ] && [ -f "package.json" ] && grep -q "qapp" package.json 2>/dev/null; then
     info "Running from QApp source directory."
     SOURCE_DIR="$(pwd)"
 else
@@ -88,12 +88,12 @@ info "Building QApp (cmake)..."
 cmake -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev 2>/dev/null
 cmake --build build --parallel
 
-[ -f "build/pwaapp" ]       || die "Build failed: pwaapp binary not found"
+[ -f "build/qapp-installer" ]          || die "Build failed: qapp-installer binary not found"
 [ -f "build/qapp-wrapper" ] || die "Build failed: qapp-wrapper binary not found"
 
 info "Build successful."
 
-# ── Install to ~/.local/share/qapp/ ──────────────────────────
+# ── Install to ~/.local/share/qapp-framework/ ────────────────
 
 info "Installing to $INSTALL_DIR ..."
 
@@ -103,8 +103,8 @@ mkdir -p "$INSTALL_DIR/src"
 mkdir -p "$BIN_DIR"
 
 # Binaries
-cp build/pwaapp       "$INSTALL_DIR/app/"
-cp build/qapp-wrapper "$INSTALL_DIR/app/"
+cp build/qapp-installer "$INSTALL_DIR/app/"
+cp build/qapp-wrapper   "$INSTALL_DIR/app/"
 
 # CLI scripts
 cp bin/*.js "$INSTALL_DIR/bin/"
@@ -126,12 +126,12 @@ info "Creating desktop launcher..."
 
 mkdir -p "$HOME/.local/share/applications"
 
-cat > "$HOME/.local/share/applications/qapp.desktop" << DESKTOP
+cat > "$HOME/.local/share/applications/qapp-installer.desktop" << DESKTOP
 [Desktop Entry]
 Type=Application
 Name=QApp
 Comment=Install websites as standalone desktop apps
-Exec=$INSTALL_DIR/app/pwaapp
+Exec=$INSTALL_DIR/app/qapp-installer
 Icon=applications-internet
 Terminal=false
 StartupNotify=true
@@ -150,7 +150,7 @@ info "║                                              ║"
 info "║  Launch from KDE/GNOME menu: search 'QApp'   ║"
 info "║                                              ║"
 info "║  Or from terminal:                           ║"
-info "║    $INSTALL_DIR/app/pwaapp       ║"
+info "║    $INSTALL_DIR/app/qapp-installer ║"
 info "║                                              ║"
 info "║  CLI tools:                                  ║"
 info "║    node $INSTALL_DIR/bin/install.js <url>    ║"

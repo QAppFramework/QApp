@@ -17,7 +17,7 @@ import { recoverApps } from './app-recovery.js';
 /**
  * List all installed apps.
  *
- * Reads all .json files from ~/.local/share/qapp/apps/,
+ * Reads all .json files from ~/.local/share/qapp-framework/apps/,
  * validates each against the metadata schema,
  * and returns them sorted by name.
  *
@@ -27,7 +27,7 @@ export async function listInstalledApps() {
   // Auto-recover: rebuild metadata from .desktop files if missing
   await recoverApps();
 
-  const appsDir = join(homedir(), '.local', 'share', 'qapp', 'apps');
+  const appsDir = join(homedir(), '.local', 'share', 'qapp-framework', 'apps');
 
   /** @type {string[]} */
   let entries;

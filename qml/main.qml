@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import PWAApp
+import QAppInstaller
 
 ApplicationWindow {
     id: root
@@ -10,7 +10,7 @@ ApplicationWindow {
     minimumWidth: 400
     minimumHeight: 300
     visible: true
-    title: "QApp"
+    title: Qt.application.name === "qapp-installer-dev" ? "QApp Dev" : "QApp"
 
     // URL validation — matches http(s)://domain.tld with optional path
     // Canonical logic: src/url-validator.js (keep in sync)
@@ -31,6 +31,16 @@ ApplicationWindow {
     function isValidInput(text) {
         if (text.length === 0) return false;
         return _urlPattern.test(normalizeUrl(text));
+    }
+
+    // Check if an app has an update available
+    function hasAppUpdate(appId) {
+        for (var i = 0; i < appInstaller.appUpdates.length; i++) {
+            var entry = appInstaller.appUpdates[i]
+            if (entry.appId === appId && entry.hasUpdate)
+                return true
+        }
+        return false
     }
 
     SiteClassifier {
@@ -187,7 +197,7 @@ ApplicationWindow {
                 Layout.leftMargin: 12
 
                 Label {
-                    text: "QApp"
+                    text: root.title
                     font.pixelSize: 18
                     font.bold: true
                 }
@@ -210,7 +220,10 @@ ApplicationWindow {
                 }
                 TabButton {
                     text: "Manage"
-                    onClicked: appInstaller.listApps()
+                    onClicked: {
+                        appInstaller.listApps()
+                        appInstaller.checkUpdates()
+                    }
                 }
             }
         }
@@ -277,7 +290,6 @@ ApplicationWindow {
                 onClicked: {
                     var url = root.normalizeUrl(urlField.text);
                     classifier.classify(url);
-                    statusText.text = "Classifying: " + url + " ...";
                 }
             }
         }
@@ -410,8 +422,12 @@ ApplicationWindow {
                 font.pixelSize: 14
 
                 onClicked: {
-                    var url = root.normalizeUrl(urlField.text);
-                    appInstaller.install(url);
+                    if (classifier.classifyResultJson.length > 0) {
+                        appInstaller.installFromData(classifier.classifyResultJson);
+                    } else {
+                        var url = root.normalizeUrl(urlField.text);
+                        appInstaller.install(url);
+                    }
                 }
             }
 
@@ -539,12 +555,33 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             spacing: 2
 
-                            Label {
-                                text: modelData.name || modelData.appId
-                                font.pixelSize: 14
-                                font.bold: true
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
+                            RowLayout {
+                                spacing: 8
+
+                                Label {
+                                    text: modelData.name || modelData.appId
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+
+                                Rectangle {
+                                    width: updateLabel.implicitWidth + 12
+                                    height: 18
+                                    radius: 9
+                                    color: "#ff9800"
+                                    visible: root.hasAppUpdate(modelData.appId)
+
+                                    Label {
+                                        id: updateLabel
+                                        anchors.centerIn: parent
+                                        text: "Update"
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: "white"
+                                    }
+                                }
                             }
 
                             Label {
@@ -553,6 +590,18 @@ ApplicationWindow {
                                 opacity: 0.6
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
+                            }
+                        }
+
+                        // Update button (only when update available)
+                        Button {
+                            text: "Update"
+                            font.pixelSize: 12
+                            visible: root.hasAppUpdate(modelData.appId)
+                            enabled: !appInstaller.busy
+
+                            onClicked: {
+                                appInstaller.install(modelData.url)
                             }
                         }
 
@@ -585,6 +634,14 @@ ApplicationWindow {
                 running: appInstaller.busy
                 visible: appInstaller.busy
             }
+
+            Label {
+                text: "Checking for updates..."
+                font.pixelSize: 11
+                opacity: 0.5
+                Layout.alignment: Qt.AlignHCenter
+                visible: appInstaller.checkingUpdates
+            }
         }
     }
 
@@ -597,6 +654,8 @@ ApplicationWindow {
                 id: statusText
                 text: {
                     if (appInstaller.busy) return "Installing...";
+                    if (classifier.busy && classifier.statusMessage.length > 0)
+                        return classifier.statusMessage;
                     if (classifier.busy) return "Classifying...";
                     if (appInstaller.installed) return "Installed: " + appInstaller.appName;
                     if (classifier.hasResult && classifier.errorMessage.length === 0)

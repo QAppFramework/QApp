@@ -1,14 +1,21 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QtWebEngineQuick>
 #include <QDebug>
 
 using namespace Qt::StringLiterals;
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
-    app.setApplicationName("PWAApp");
+#ifdef QAPP_DEV_BUILD
+    qputenv("QML_DISABLE_DISK_CACHE", "1");
+#endif
+
+    QtWebEngineQuick::initialize();
+
+    QApplication app(argc, argv);
+    app.setApplicationName(QAPP_APP_ID);
     app.setApplicationVersion("0.1.0");
     app.setOrganizationName("TwistedBrain");
 
@@ -16,7 +23,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    const QUrl url(u"qrc:/PWAApp/qml/main.qml"_s);
+    const QUrl url(u"qrc:/QAppInstaller/qml/main.qml"_s);
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
         &app, [](const QUrl &url) {

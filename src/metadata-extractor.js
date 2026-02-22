@@ -15,6 +15,7 @@
  *   displayMode: string,
  *   themeColor: string | null,
  *   startUrl: string | null,
+ *   scope: string | null,
  * }} DisplayMetadata
  */
 
@@ -70,8 +71,11 @@ export function extractMetadata({ manifest, htmlMeta, finalUrl }) {
   // Start URL from manifest
   const startUrl = manifest?.start_url ?? null;
 
+  // Scope from manifest
+  const scope = manifest?.scope ?? null;
+
   return {
     success: true,
-    data: { name, iconUrl, displayMode, themeColor, startUrl },
+    data: { name, iconUrl, displayMode, themeColor, startUrl, scope },
   };
 }

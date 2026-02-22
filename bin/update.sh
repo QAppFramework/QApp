@@ -11,7 +11,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/QAppFramework/QApp.git"
-INSTALL_DIR="$HOME/.local/share/qapp"
+INSTALL_DIR="$HOME/.local/share/qapp-framework"
 
 info()  { echo "[QApp] $1"; }
 error() { echo "[QApp] ERROR: $1" >&2; }
@@ -37,7 +37,7 @@ info "Building..."
 cmake -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev 2>/dev/null
 cmake --build build --parallel 2>&1 | tail -3
 
-[ -f "build/pwaapp" ]       || { error "pwaapp binary not found"; exit 2; }
+[ -f "build/qapp-installer" ]          || { error "qapp-installer binary not found"; exit 2; }
 [ -f "build/qapp-wrapper" ] || { error "qapp-wrapper binary not found"; exit 2; }
 
 info "Build successful."
@@ -48,7 +48,7 @@ info "Installing update..."
 mkdir -p "$INSTALL_DIR/app" "$INSTALL_DIR/bin" "$INSTALL_DIR/src"
 
 # Binaries (rename trick for running processes)
-for bin in pwaapp qapp-wrapper; do
+for bin in qapp-installer qapp-wrapper; do
     if [ -f "$INSTALL_DIR/app/$bin" ]; then
         mv "$INSTALL_DIR/app/$bin" "$INSTALL_DIR/app/$bin.old" 2>/dev/null || true
     fi

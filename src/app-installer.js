@@ -11,12 +11,20 @@ import { resolveAppPaths } from './xdg-paths.js';
 import { generateDesktopEntry } from './desktop-entry.js';
 import { buildAppMetadata } from './app-metadata.js';
 import { downloadIcon } from './icon-downloader.js';
+import { generateLetterIcon } from './icon-resolver.js';
 
 /** @typedef {import('./app-metadata.js').AppMetadata} AppMetadata */
 
 /**
  * @typedef {{
- *   metadata: { name: string, iconUrl: string },
+ *   metadata: {
+ *     name: string,
+ *     iconUrl: string,
+ *     displayMode?: string,
+ *     themeColor?: string | null,
+ *     startUrl?: string | null,
+ *     scope?: string | null,
+ *   },
  *   classification: { level: string },
  *   finalUrl: string,
  * }} ClassifyResult
@@ -67,24 +75,46 @@ export async function installApp(classifyResult, options) {
   }
   const paths = pathsResult.data;
 
-  // Step 4: Download/save icon
-  const iconResult = await downloadIcon(iconSource, paths.iconFile);
+  // Step 4: Download/save icon (with letter icon fallback)
+  let iconResult = await downloadIcon(iconSource, paths.iconFile);
+  if (!iconResult.success && !iconSource.startsWith('data:')) {
+    // HTTP icon fetch failed (e.g. 403 from CDN) — fall back to letter icon
+    const letterIcon = generateLetterIcon(displayName);
+    const letterPaths = resolveAppPaths(appId, 'svg');
+    if (letterPaths.success) {
+      iconResult = await downloadIcon(letterIcon, letterPaths.data.iconFile);
+      if (iconResult.success) {
+        // Update paths to use the SVG icon file for desktop entry and metadata
+        paths.iconFile = letterPaths.data.iconFile;
+      }
+    }
+  }
   if (!iconResult.success) {
     return { success: false, error: `Icon: ${iconResult.error}` };
   }
 
-  // Step 5: Generate .desktop entry
+  // Step 5: Resolve launch URL (startUrl from manifest → finalUrl)
+  let launchUrl = classifyResult.finalUrl;
+  if (classifyResult.metadata.startUrl) {
+    try {
+      launchUrl = new URL(classifyResult.metadata.startUrl, classifyResult.finalUrl).href;
+    } catch {
+      // Invalid startUrl — fall back to finalUrl
+    }
+  }
+
+  // Step 6: Generate .desktop entry
   const desktopResult = generateDesktopEntry({
     name: displayName,
-    exec: `${options.wrapperPath} ${appId} ${classifyResult.finalUrl}`,
+    exec: `${options.wrapperPath} ${appId} ${launchUrl}`,
     icon: paths.iconFile,
-    comment: `Web app: ${classifyResult.finalUrl}`,
+    comment: `Web app: ${launchUrl}`,
   });
   if (!desktopResult.success) {
     return { success: false, error: `Desktop entry: ${desktopResult.error}` };
   }
 
-  // Step 6: Write .desktop file
+  // Step 7: Write .desktop file
   try {
     await mkdir(paths.applicationsDir, { recursive: true });
     await writeFile(paths.desktopFile, desktopResult.data, 'utf-8');
@@ -93,16 +123,25 @@ export async function installApp(classifyResult, options) {
     return { success: false, error: `Write .desktop: ${msg}` };
   }
 
-  // Step 7: Build metadata
-  const metaResult = buildAppMetadata({
+  // Step 8: Collect optional manifest fields (only non-null, non-browser values)
+  const { displayMode, themeColor, scope } = classifyResult.metadata;
+  /** @type {import('./app-metadata.js').AppMetadataInput} */
+  const metaInput = {
     appId,
     name: displayName,
-    url: classifyResult.finalUrl,
+    url: launchUrl,
     level: classifyResult.classification.level,
     iconPath: paths.iconFile,
     desktopPath: paths.desktopFile,
     wrapperPath: options.wrapperPath,
-  });
+  };
+  if (displayMode && displayMode !== 'browser') metaInput.displayMode = displayMode;
+  if (themeColor) metaInput.themeColor = themeColor;
+  if (classifyResult.metadata.startUrl) metaInput.startUrl = launchUrl;
+  if (scope) metaInput.scope = scope;
+
+  // Step 9: Build metadata
+  const metaResult = buildAppMetadata(metaInput);
   if (!metaResult.success) {
     return { success: false, error: `Metadata: ${metaResult.error}` };
   }

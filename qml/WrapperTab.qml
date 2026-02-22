@@ -6,8 +6,28 @@ WebEngineView {
     id: webView
     anchors.fill: parent
 
+    // Scope for navigation enforcement (empty = no restriction)
+    property string appScope: ""
+
     // Signal to parent to open URL in new tab
     signal openInNewTab(string url)
+    // Signal to parent to open a window request in new tab (preserves window.opener)
+    signal openRequestInNewTab(var request)
+
+    // Check if a URL is within the app scope
+    function isInScope(urlString) {
+        if (appScope.length === 0) return true
+        try {
+            var scopeUrl = new URL(appScope)
+            var targetUrl = new URL(urlString)
+            // Same origin check
+            if (scopeUrl.origin !== targetUrl.origin) return false
+            // Path prefix check
+            return targetUrl.pathname.indexOf(scopeUrl.pathname) === 0
+        } catch(e) {
+            return true  // If URL parsing fails, allow navigation
+        }
+    }
 
     onLoadingChanged: function(loadRequest) {
         if (loadRequest.status === WebEngineView.LoadFailedStatus) {
@@ -15,9 +35,26 @@ WebEngineView {
         }
     }
 
-    // Intercept new window requests → open in new tab instead
+    // Intercept new window requests → new tab with opener relationship
     onNewWindowRequested: function(request) {
-        webView.openInNewTab(request.requestedUrl.toString())
+        webView.openRequestInNewTab(request)
+    }
+
+    onNavigationRequested: function(request) {
+        // Always allow back/forward/reload
+        if (request.navigationType === WebEngineNavigationRequest.BackForwardNavigation ||
+            request.navigationType === WebEngineNavigationRequest.ReloadNavigation) {
+            request.action = WebEngineNavigationRequest.AcceptRequest
+            return
+        }
+        // For link clicks and form submissions, check scope
+        var reqUrl = request.url.toString()
+        if (!isInScope(reqUrl)) {
+            request.action = WebEngineNavigationRequest.IgnoreRequest
+            Qt.openUrlExternally(reqUrl)
+            return
+        }
+        request.action = WebEngineNavigationRequest.AcceptRequest
     }
 
     onContextMenuRequested: function(request) {

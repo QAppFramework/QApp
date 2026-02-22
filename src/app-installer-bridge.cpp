@@ -37,6 +37,37 @@ void AppInstaller::install(const QString &url)
     }
 }
 
+void AppInstaller::installFromData(const QString &classifyResultJson)
+{
+    if (m_busy) return;
+
+    clearResult();
+    m_busy = true;
+    emit busyChanged();
+
+    m_process = new QProcess(this);
+
+    connect(m_process, &QProcess::finished, this, &AppInstaller::onInstallFinished);
+
+    QString scriptPath = QCoreApplication::applicationDirPath() + "/../bin/install-from-data.js";
+    QString wrapperPath = QCoreApplication::applicationDirPath() + "/qapp-wrapper";
+
+    m_process->start("node", {scriptPath, "--wrapper-path", wrapperPath});
+
+    if (!m_process->waitForStarted(5000)) {
+        m_errorMessage = "Failed to start Node.js process";
+        m_busy = false;
+        emit busyChanged();
+        emit resultChanged();
+        m_process->deleteLater();
+        m_process = nullptr;
+        return;
+    }
+
+    m_process->write(classifyResultJson.toUtf8());
+    m_process->closeWriteChannel();
+}
+
 void AppInstaller::uninstall(const QString &appId)
 {
     if (m_busy) return;
@@ -269,6 +300,54 @@ void AppInstaller::onUninstallFinished(int exitCode, QProcess::ExitStatus exitSt
     if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
         listApps();
     }
+}
+
+void AppInstaller::checkUpdates()
+{
+    if (m_checkingUpdates) return;
+
+    m_checkingUpdates = true;
+    emit checkingUpdatesChanged();
+
+    m_checkProcess = new QProcess(this);
+
+    connect(m_checkProcess, &QProcess::finished, this, &AppInstaller::onCheckUpdatesFinished);
+
+    QString scriptPath = QCoreApplication::applicationDirPath() + "/../bin/check-updates.js";
+
+    m_checkProcess->start("node", {scriptPath});
+
+    if (!m_checkProcess->waitForStarted(5000)) {
+        m_checkingUpdates = false;
+        emit checkingUpdatesChanged();
+        m_checkProcess->deleteLater();
+        m_checkProcess = nullptr;
+    }
+}
+
+void AppInstaller::onCheckUpdatesFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    m_checkingUpdates = false;
+    emit checkingUpdatesChanged();
+
+    if (!m_checkProcess) return;
+
+    QByteArray output = m_checkProcess->readAllStandardOutput();
+
+    if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+        QJsonDocument doc = QJsonDocument::fromJson(output);
+        if (doc.isArray()) {
+            m_appUpdates = doc.array();
+        } else {
+            m_appUpdates = QJsonArray();
+        }
+    } else {
+        m_appUpdates = QJsonArray();
+    }
+
+    emit appUpdatesChanged();
+    m_checkProcess->deleteLater();
+    m_checkProcess = nullptr;
 }
 
 void AppInstaller::clearResult()

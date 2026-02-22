@@ -25,8 +25,8 @@ import { join } from 'node:path';
  *
  * Paths:
  * - .desktop → ~/.local/share/applications/qapp-{appId}.desktop
- * - Icon → ~/.local/share/qapp/icons/{appId}.{ext}
- * - Metadata → ~/.local/share/qapp/apps/{appId}.json
+ * - Icon → ~/.local/share/qapp-framework/icons/{appId}.{ext}
+ * - Metadata → ~/.local/share/qapp-framework/apps/{appId}.json
  *
  * @param {string} appId - The app identifier (e.g. "github-com").
  * @param {string} [iconExt="png"] - Icon file extension (png, svg, ico).
@@ -40,7 +40,7 @@ export function resolveAppPaths(appId, iconExt = 'png') {
   const home = homedir();
   const localShare = join(home, '.local', 'share');
   const applicationsDir = join(localShare, 'applications');
-  const qappBase = join(localShare, 'qapp');
+  const qappBase = join(localShare, 'qapp-framework');
   const iconsDir = join(qappBase, 'icons');
   const appsDir = join(qappBase, 'apps');
 

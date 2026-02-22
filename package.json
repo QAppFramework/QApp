@@ -1,5 +1,5 @@
 {
-  "name": "pwaapp",
+  "name": "qapp-framework",
   "version": "0.1.0",
   "description": "PWA runner/wrapper app for native-feeling web app experiences",
   "type": "module",

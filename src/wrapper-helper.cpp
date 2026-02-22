@@ -1,11 +1,84 @@
 #include "wrapper-helper.hpp"
 #include <QCoreApplication>
+#include <QDir>
+#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QStandardPaths>
+#include <QUrl>
 
 WrapperHelper::WrapperHelper(QObject *parent)
     : QObject(parent)
 {
+}
+
+void WrapperHelper::loadMetadata(const QString &appId)
+{
+    if (appId.isEmpty()) return;
+
+    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QString metaPath = dataDir + "/qapp-framework/apps/" + appId + ".json";
+
+    QFile file(metaPath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        // No metadata file — WS or legacy install, use browser defaults
+        m_metadataLoaded = true;
+        emit metadataChanged();
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isObject()) {
+        m_metadataLoaded = true;
+        emit metadataChanged();
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    m_displayMode = obj.value("displayMode").toString();
+    m_themeColor = obj.value("themeColor").toString();
+    m_scope = obj.value("scope").toString();
+
+    // Resolve startUrl: if relative, resolve against the url field
+    QString startUrl = obj.value("startUrl").toString();
+    if (!startUrl.isEmpty()) {
+        m_metadataStartUrl = startUrl;
+    }
+
+    // Resolve scope to absolute if relative
+    if (!m_scope.isEmpty()) {
+        QString baseUrl = obj.value("url").toString();
+        if (!baseUrl.isEmpty()) {
+            QUrl resolved = QUrl(baseUrl).resolved(QUrl(m_scope));
+            m_scope = resolved.toString();
+        }
+    }
+
+    m_metadataLoaded = true;
+    emit metadataChanged();
+}
+
+void WrapperHelper::clearAppDataAndRestart(const QString &appId)
+{
+    if (appId.isEmpty()) return;
+
+    // WebEngine stores profile data under <AppData>/QtWebEngine/<storageName>/
+    QString dataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                       + "/QtWebEngine/" + appId;
+
+    // Relaunch args: same binary + same arguments
+    QString exe = QCoreApplication::applicationFilePath();
+    QStringList args = QCoreApplication::arguments().mid(1);
+
+    // Spawn a detached shell that waits for us to exit, deletes data, relaunches
+    QString cmd = QString("sleep 0.5 && rm -rf '%1' && exec '%2' %3")
+                      .arg(dataPath, exe, args.join("' '").prepend("'").append("'"));
+
+    QProcess::startDetached("bash", {"-c", cmd});
+    QCoreApplication::quit();
 }
 
 void WrapperHelper::saveAsApp(const QString &url, const QString &name)
