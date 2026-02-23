@@ -97,18 +97,49 @@ cp build/qapp-pwa-app    "$INSTALL_DIR/app/"
 # Self-updater
 cp bin/update.sh "$INSTALL_DIR/app/" 2>/dev/null || true
 
-# ── Clean up legacy installs ──────────────────────────────────
+# ── Migrate legacy installs (~/.local/share/qapp/ → qapp-framework/) ──
 
-# Remove old "qapp" desktop entry (pre-rename, pointed to ~/.local/share/qapp/)
-if [ -f "$HOME/.local/share/applications/qapp.desktop" ]; then
-    rm -f "$HOME/.local/share/applications/qapp.desktop"
+OLD_BASE="$HOME/.local/share/qapp"
+NEW_WRAPPER="$INSTALL_DIR/app/qapp-ws-wrapper"
+APPS_DIR="$HOME/.local/share/applications"
+
+# Remove old "qapp" desktop entry (pre-rename launcher)
+if [ -f "$APPS_DIR/qapp.desktop" ]; then
+    rm -f "$APPS_DIR/qapp.desktop"
     info "Removed legacy qapp.desktop entry."
 fi
 
-# Remove old install dir (pre-rename)
-if [ -d "$HOME/.local/share/qapp/app" ]; then
-    rm -rf "$HOME/.local/share/qapp/app"
-    info "Removed legacy ~/.local/share/qapp/app/ directory."
+# Migrate app metadata and icons from old dir
+if [ -d "$OLD_BASE/apps" ]; then
+    mkdir -p "$INSTALL_DIR/apps" "$INSTALL_DIR/icons"
+
+    # Copy metadata + icons (don't overwrite if already migrated)
+    cp -rn "$OLD_BASE/apps/"*.json "$INSTALL_DIR/apps/" 2>/dev/null || true
+    cp -rn "$OLD_BASE/icons/"* "$INSTALL_DIR/icons/" 2>/dev/null || true
+
+    # Fix paths in metadata JSON (old paths → new paths, old binary → new binary)
+    for jsonfile in "$INSTALL_DIR/apps/"*.json; do
+        [ -f "$jsonfile" ] || continue
+        sed -i "s|$OLD_BASE/icons/|$INSTALL_DIR/icons/|g" "$jsonfile"
+        sed -i "s|$OLD_BASE/app/qapp-wrapper|$NEW_WRAPPER|g" "$jsonfile"
+    done
+
+    # Fix .desktop entries for installed apps
+    for desktop in "$APPS_DIR"/qapp-*.desktop; do
+        [ -f "$desktop" ] || continue
+        [ "$(basename "$desktop")" = "qapp-installer.desktop" ] && continue
+        if grep -q "$OLD_BASE/app/qapp-wrapper" "$desktop" 2>/dev/null; then
+            sed -i "s|$OLD_BASE/app/qapp-wrapper|$NEW_WRAPPER|g" "$desktop"
+            sed -i "s|$OLD_BASE/icons/|$INSTALL_DIR/icons/|g" "$desktop"
+        fi
+    done
+
+    info "Migrated apps from legacy ~/.local/share/qapp/ directory."
+fi
+
+# Remove old binaries (not app data — keep icons/apps in case of rollback)
+if [ -d "$OLD_BASE/app" ]; then
+    rm -rf "$OLD_BASE/app"
 fi
 
 # ── Create .desktop entry ─────────────────────────────────────
