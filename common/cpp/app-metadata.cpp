@@ -88,8 +88,22 @@ Result<AppMetadataData> AppMetadata::validate(const QJsonObject &obj)
     // Optional fields
     data.displayMode = obj.value(QStringLiteral("displayMode")).toString();
     data.themeColor = obj.value(QStringLiteral("themeColor")).toString();
+    data.backgroundColor = obj.value(QStringLiteral("backgroundColor")).toString();
     data.startUrl = obj.value(QStringLiteral("startUrl")).toString();
     data.scope = obj.value(QStringLiteral("scope")).toString();
+    data.manifestId = obj.value(QStringLiteral("manifestId")).toString();
+    if (obj.contains(QStringLiteral("displayOverride")) && obj[QStringLiteral("displayOverride")].isArray()) {
+        for (const auto &v : obj[QStringLiteral("displayOverride")].toArray())
+            if (v.isString()) data.displayOverride.append(v.toString());
+    }
+    if (obj.contains(QStringLiteral("shortcuts")) && obj[QStringLiteral("shortcuts")].isArray())
+        data.shortcuts = obj[QStringLiteral("shortcuts")].toArray();
+    if (obj.contains(QStringLiteral("mimeTypes")) && obj[QStringLiteral("mimeTypes")].isArray()) {
+        for (const auto &v : obj[QStringLiteral("mimeTypes")].toArray())
+            if (v.isString()) data.mimeTypes.append(v.toString());
+    }
+    if (obj.contains(QStringLiteral("protocolHandlers")) && obj[QStringLiteral("protocolHandlers")].isArray())
+        data.protocolHandlers = obj[QStringLiteral("protocolHandlers")].toArray();
 
     return validateFields(data);
 }
@@ -113,11 +127,33 @@ QJsonObject AppMetadata::toJson(const AppMetadataData &data)
     if (!data.themeColor.isEmpty()) {
         obj[QStringLiteral("themeColor")] = data.themeColor;
     }
+    if (!data.backgroundColor.isEmpty()) {
+        obj[QStringLiteral("backgroundColor")] = data.backgroundColor;
+    }
     if (!data.startUrl.isEmpty()) {
         obj[QStringLiteral("startUrl")] = data.startUrl;
     }
     if (!data.scope.isEmpty()) {
         obj[QStringLiteral("scope")] = data.scope;
+    }
+    if (!data.manifestId.isEmpty()) {
+        obj[QStringLiteral("manifestId")] = data.manifestId;
+    }
+    if (!data.displayOverride.isEmpty()) {
+        QJsonArray arr;
+        for (const auto &mode : data.displayOverride) arr.append(mode);
+        obj[QStringLiteral("displayOverride")] = arr;
+    }
+    if (!data.shortcuts.isEmpty()) {
+        obj[QStringLiteral("shortcuts")] = data.shortcuts;
+    }
+    if (!data.mimeTypes.isEmpty()) {
+        QJsonArray arr;
+        for (const auto &m : data.mimeTypes) arr.append(m);
+        obj[QStringLiteral("mimeTypes")] = arr;
+    }
+    if (!data.protocolHandlers.isEmpty()) {
+        obj[QStringLiteral("protocolHandlers")] = data.protocolHandlers;
     }
 
     return obj;

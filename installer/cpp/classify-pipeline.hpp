@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QJsonObject>
+#include <QJsonArray>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -22,9 +23,15 @@ struct ClassifyResult {
     QString iconUrl;
     QString displayMode;
     QString themeColor;
+    QString backgroundColor;
     QString startUrl;
     QString scope;
     QString finalUrl;    // URL after redirects
+    QString manifestId;
+    QStringList displayOverride;
+    QJsonArray shortcuts;
+    QStringList mimeTypes;         // from file_handlers
+    QJsonArray protocolHandlers;   // [{protocol, url}]
 
     QJsonObject toJson() const;
 };

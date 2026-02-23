@@ -35,8 +35,25 @@ QJsonObject ClassifyResult::toJson() const
     metadata[QStringLiteral("iconUrl")] = iconUrl;
     metadata[QStringLiteral("displayMode")] = displayMode;
     metadata[QStringLiteral("themeColor")] = themeColor;
+    metadata[QStringLiteral("backgroundColor")] = backgroundColor;
     metadata[QStringLiteral("startUrl")] = startUrl;
     metadata[QStringLiteral("scope")] = scope;
+    if (!manifestId.isEmpty())
+        metadata[QStringLiteral("manifestId")] = manifestId;
+    if (!displayOverride.isEmpty()) {
+        QJsonArray doArr;
+        for (const auto &m : displayOverride) doArr.append(m);
+        metadata[QStringLiteral("displayOverride")] = doArr;
+    }
+    if (!shortcuts.isEmpty())
+        metadata[QStringLiteral("shortcuts")] = shortcuts;
+    if (!mimeTypes.isEmpty()) {
+        QJsonArray mtArr;
+        for (const auto &m : mimeTypes) mtArr.append(m);
+        metadata[QStringLiteral("mimeTypes")] = mtArr;
+    }
+    if (!protocolHandlers.isEmpty())
+        metadata[QStringLiteral("protocolHandlers")] = protocolHandlers;
 
     QJsonObject root;
     root[QStringLiteral("classification")] = classification;
@@ -266,6 +283,10 @@ void ClassifyPipeline::classify()
     else if (!m_htmlMeta.themeColor.isEmpty())
         m_result.themeColor = m_htmlMeta.themeColor;
 
+    // Background color: manifest.background_color
+    if (!m_manifest.backgroundColor.isEmpty())
+        m_result.backgroundColor = m_manifest.backgroundColor;
+
     // Start URL: manifest.start_url (resolved) → null
     if (!m_manifest.startUrl.isEmpty())
         m_result.startUrl = m_url.resolved(QUrl(m_manifest.startUrl)).toString();
@@ -273,6 +294,46 @@ void ClassifyPipeline::classify()
     // Scope: manifest.scope (resolved) → null
     if (!m_manifest.scope.isEmpty())
         m_result.scope = m_url.resolved(QUrl(m_manifest.scope)).toString();
+
+    // Manifest id
+    if (!m_manifest.id.isEmpty())
+        m_result.manifestId = m_manifest.id;
+
+    // display_override
+    if (!m_manifest.displayOverride.isEmpty())
+        m_result.displayOverride = m_manifest.displayOverride;
+
+    // Shortcuts as JSON array
+    if (!m_manifest.shortcuts.isEmpty()) {
+        QJsonArray scArr;
+        for (const auto &sc : m_manifest.shortcuts) {
+            QJsonObject scObj;
+            scObj[QStringLiteral("name")] = sc.name;
+            scObj[QStringLiteral("url")] = m_url.resolved(QUrl(sc.url)).toString();
+            if (!sc.description.isEmpty())
+                scObj[QStringLiteral("description")] = sc.description;
+            scArr.append(scObj);
+        }
+        m_result.shortcuts = scArr;
+    }
+
+    // File handlers → MIME types
+    for (const auto &fh : m_manifest.fileHandlers)
+        for (const auto &mime : fh.accept)
+            if (!m_result.mimeTypes.contains(mime))
+                m_result.mimeTypes.append(mime);
+
+    // Protocol handlers
+    if (!m_manifest.protocolHandlers.isEmpty()) {
+        QJsonArray phArr;
+        for (const auto &ph : m_manifest.protocolHandlers) {
+            QJsonObject phObj;
+            phObj[QStringLiteral("protocol")] = ph.protocol;
+            phObj[QStringLiteral("url")] = m_url.resolved(QUrl(ph.url)).toString();
+            phArr.append(phObj);
+        }
+        m_result.protocolHandlers = phArr;
+    }
 
     // Final URL (after redirects)
     m_result.finalUrl = m_url.toString();

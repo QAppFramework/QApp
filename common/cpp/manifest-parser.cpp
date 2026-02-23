@@ -45,6 +45,65 @@ Result<Manifest> ManifestParser::validate(const QJsonObject &json)
             return Result<Manifest>::fail(QStringLiteral("Invalid display mode: ") + m.display);
     }
 
+    // Parse id
+    if (json.contains(QStringLiteral("id")) && json[QStringLiteral("id")].isString())
+        m.id = json[QStringLiteral("id")].toString();
+
+    // Parse display_override array
+    if (json.contains(QStringLiteral("display_override")) && json[QStringLiteral("display_override")].isArray()) {
+        for (const auto &val : json[QStringLiteral("display_override")].toArray()) {
+            if (val.isString())
+                m.displayOverride.append(val.toString());
+        }
+    }
+
+    // Parse shortcuts array
+    if (json.contains(QStringLiteral("shortcuts")) && json[QStringLiteral("shortcuts")].isArray()) {
+        for (const auto &val : json[QStringLiteral("shortcuts")].toArray()) {
+            if (!val.isObject()) continue;
+            auto obj = val.toObject();
+            ManifestShortcut sc;
+            sc.name = obj[QStringLiteral("name")].toString();
+            sc.url = obj[QStringLiteral("url")].toString();
+            if (sc.name.isEmpty() || sc.url.isEmpty()) continue;
+            sc.description = obj[QStringLiteral("description")].toString();
+            if (obj.contains(QStringLiteral("icons")) && obj[QStringLiteral("icons")].isArray()) {
+                auto iconsArr = obj[QStringLiteral("icons")].toArray();
+                if (!iconsArr.isEmpty() && iconsArr[0].isObject())
+                    sc.iconSrc = iconsArr[0].toObject()[QStringLiteral("src")].toString();
+            }
+            m.shortcuts.append(sc);
+        }
+    }
+
+    // Parse file_handlers array
+    if (json.contains(QStringLiteral("file_handlers")) && json[QStringLiteral("file_handlers")].isArray()) {
+        for (const auto &val : json[QStringLiteral("file_handlers")].toArray()) {
+            if (!val.isObject()) continue;
+            auto obj = val.toObject();
+            ManifestFileHandler fh;
+            fh.action = obj[QStringLiteral("action")].toString();
+            if (fh.action.isEmpty()) continue;
+            auto acceptObj = obj[QStringLiteral("accept")].toObject();
+            for (auto it = acceptObj.begin(); it != acceptObj.end(); ++it)
+                fh.accept.append(it.key());
+            m.fileHandlers.append(fh);
+        }
+    }
+
+    // Parse protocol_handlers array
+    if (json.contains(QStringLiteral("protocol_handlers")) && json[QStringLiteral("protocol_handlers")].isArray()) {
+        for (const auto &val : json[QStringLiteral("protocol_handlers")].toArray()) {
+            if (!val.isObject()) continue;
+            auto obj = val.toObject();
+            ManifestProtocolHandler ph;
+            ph.protocol = obj[QStringLiteral("protocol")].toString();
+            ph.url = obj[QStringLiteral("url")].toString();
+            if (ph.protocol.isEmpty() || ph.url.isEmpty()) continue;
+            m.protocolHandlers.append(ph);
+        }
+    }
+
     // Parse icons array
     if (json.contains(QStringLiteral("icons")) && json[QStringLiteral("icons")].isArray()) {
         for (const auto &val : json[QStringLiteral("icons")].toArray()) {

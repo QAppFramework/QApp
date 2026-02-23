@@ -33,6 +33,27 @@ Result<QString> DesktopEntry::generate(const DesktopEntryInput &input)
         : input.categories;
     lines << QStringLiteral("Categories=") + categories;
 
+    if (!input.mimeTypes.isEmpty()) {
+        lines << QStringLiteral("MimeType=") + input.mimeTypes;
+    }
+
+    // Add Actions= header and action sections
+    if (!input.actions.isEmpty()) {
+        QStringList actionIds;
+        for (const auto &action : input.actions)
+            actionIds << action.id;
+        lines << QStringLiteral("Actions=") + actionIds.join(QLatin1Char(';')) + QLatin1Char(';');
+
+        for (const auto &action : input.actions) {
+            lines << QString();
+            lines << QStringLiteral("[Desktop Action ") + action.id + QLatin1Char(']');
+            lines << QStringLiteral("Name=") + action.name;
+            lines << QStringLiteral("Exec=") + action.exec;
+            if (!action.icon.isEmpty())
+                lines << QStringLiteral("Icon=") + action.icon;
+        }
+    }
+
     // Trailing newline per freedesktop spec
     return Result<QString>::ok(lines.join(QLatin1Char('\n')) + QLatin1Char('\n'));
 }

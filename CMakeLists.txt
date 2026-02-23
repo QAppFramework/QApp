@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Widgets WebEngineQuick Network)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Widgets WebEngineQuick Network DBus)
 
 # --- qapp-common: shared static library (namespace qapp::) ---
 qt_add_library(qapp-common STATIC
@@ -153,18 +153,39 @@ qt_add_executable(qapp-pwa-app
     pwa-app/cpp/qapp-pwa-app-main.cpp
     pwa-app/cpp/pwa-helper.hpp
     pwa-app/cpp/pwa-helper.cpp
+    pwa-app/cpp/pwa-permission-handler.hpp
+    pwa-app/cpp/pwa-permission-handler.cpp
+    pwa-app/cpp/pwa-notification-handler.hpp
+    pwa-app/cpp/pwa-notification-handler.cpp
+    pwa-app/cpp/pwa-os-integration.hpp
+    pwa-app/cpp/pwa-os-integration.cpp
 )
 
 target_include_directories(qapp-pwa-app PRIVATE ${CMAKE_SOURCE_DIR}/pwa-app/cpp)
 
 set_source_files_properties(pwa-app/qml/pwa-app.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/pwa-app.qml)
+set_source_files_properties(pwa-app/qml/PwaAppMenu.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PwaAppMenu.qml)
+set_source_files_properties(pwa-app/qml/PwaFullscreenHint.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PwaFullscreenHint.qml)
+set_source_files_properties(pwa-app/qml/PwaSplashScreen.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PwaSplashScreen.qml)
+set_source_files_properties(pwa-app/qml/PwaToolbar.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PwaToolbar.qml)
+set_source_files_properties(pwa-app/qml/PwaOfflineIndicator.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PwaOfflineIndicator.qml)
 
 qt_add_qml_module(qapp-pwa-app
     URI QApp.PWA
     VERSION 1.0
     QML_FILES
         pwa-app/qml/pwa-app.qml
+        pwa-app/qml/PwaAppMenu.qml
+        pwa-app/qml/PwaFullscreenHint.qml
+        pwa-app/qml/PwaSplashScreen.qml
+        pwa-app/qml/PwaToolbar.qml
+        pwa-app/qml/PwaOfflineIndicator.qml
 )
 
 if(QAPP_DEV_BUILD)
@@ -181,5 +202,7 @@ target_link_libraries(qapp-pwa-app PRIVATE
     Qt6::Quick
     Qt6::Widgets
     Qt6::WebEngineQuick
+    Qt6::Network
+    Qt6::DBus
 )
 

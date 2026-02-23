@@ -3,7 +3,9 @@
 
 #include "result.hpp"
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QString>
+#include <QStringList>
 
 namespace qapp {
 
@@ -22,8 +24,14 @@ struct AppMetadataData {
     // Optional manifest fields (empty = not set)
     QString displayMode;  // fullscreen, standalone, minimal-ui, browser
     QString themeColor;
+    QString backgroundColor;
     QString startUrl;
     QString scope;
+    QString manifestId;
+    QStringList displayOverride;
+    QJsonArray shortcuts;          // array of {name, url, description?}
+    QStringList mimeTypes;         // from file_handlers
+    QJsonArray protocolHandlers;   // [{protocol, url}]
 };
 
 /// App metadata builder and validator.

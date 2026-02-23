@@ -13,6 +13,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QUrl>
 
 namespace qapp::installer {
@@ -104,8 +105,22 @@ void AppInstaller::installFromData(const QString &classifyResultJson, const QStr
     result.iconUrl = metadata[QStringLiteral("iconUrl")].toString();
     result.displayMode = metadata[QStringLiteral("displayMode")].toString();
     result.themeColor = metadata[QStringLiteral("themeColor")].toString();
+    result.backgroundColor = metadata[QStringLiteral("backgroundColor")].toString();
     result.startUrl = metadata[QStringLiteral("startUrl")].toString();
     result.scope = metadata[QStringLiteral("scope")].toString();
+    result.manifestId = metadata[QStringLiteral("manifestId")].toString();
+    if (metadata.contains(QStringLiteral("displayOverride")) && metadata[QStringLiteral("displayOverride")].isArray()) {
+        for (const auto &v : metadata[QStringLiteral("displayOverride")].toArray())
+            if (v.isString()) result.displayOverride.append(v.toString());
+    }
+    if (metadata.contains(QStringLiteral("shortcuts")) && metadata[QStringLiteral("shortcuts")].isArray())
+        result.shortcuts = metadata[QStringLiteral("shortcuts")].toArray();
+    if (metadata.contains(QStringLiteral("mimeTypes")) && metadata[QStringLiteral("mimeTypes")].isArray()) {
+        for (const auto &v : metadata[QStringLiteral("mimeTypes")].toArray())
+            if (v.isString()) result.mimeTypes.append(v.toString());
+    }
+    if (metadata.contains(QStringLiteral("protocolHandlers")) && metadata[QStringLiteral("protocolHandlers")].isArray())
+        result.protocolHandlers = metadata[QStringLiteral("protocolHandlers")].toArray();
     result.finalUrl = root[QStringLiteral("finalUrl")].toString();
 
     if (result.finalUrl.isEmpty()) {
@@ -137,8 +152,11 @@ void AppInstaller::doInstall(const ClassifyResult &result, const QString &custom
     // Launch URL: startUrl (if present) → finalUrl
     m_installUrl = result.startUrl.isEmpty() ? result.finalUrl : result.startUrl;
 
-    // Wrapper binary path (same directory as installer)
-    m_wrapperPath = QCoreApplication::applicationDirPath() + QStringLiteral("/qapp-ws-wrapper");
+    // Wrapper binary: PWAPP → pwa-app, WS/WAPP → ws-wrapper
+    QString binaryName = (result.level == QStringLiteral("PWAPP"))
+        ? QStringLiteral("/qapp-pwa-app")
+        : QStringLiteral("/qapp-ws-wrapper");
+    m_wrapperPath = QCoreApplication::applicationDirPath() + binaryName;
 
     // Determine icon format for path resolution
     QString iconSource = customIconPath.isEmpty() ? result.iconUrl : customIconPath;
@@ -223,6 +241,26 @@ void AppInstaller::finishInstall()
                       m_installAppId + QStringLiteral(" ") + m_installUrl;
     entryInput.icon = m_installPaths.iconFile;
 
+    // Add MimeType= from file handlers
+    if (!m_installResult.mimeTypes.isEmpty())
+        entryInput.mimeTypes = m_installResult.mimeTypes.join(QLatin1Char(';')) + QLatin1Char(';');
+
+    // Add .desktop Actions from manifest shortcuts
+    for (const auto &val : m_installResult.shortcuts) {
+        QJsonObject sc = val.toObject();
+        QString scName = sc[QStringLiteral("name")].toString();
+        QString scUrl = sc[QStringLiteral("url")].toString();
+        if (scName.isEmpty() || scUrl.isEmpty()) continue;
+        qapp::DesktopAction action;
+        // Generate alphanumeric action id from name
+        action.id = scName;
+        action.id.remove(QRegularExpression(QStringLiteral("[^a-zA-Z0-9]")));
+        action.name = scName;
+        action.exec = m_wrapperPath + QStringLiteral(" ") +
+                      m_installAppId + QStringLiteral(" ") + scUrl;
+        entryInput.actions.append(action);
+    }
+
     auto entryResult = qapp::DesktopEntry::generate(entryInput);
     if (!entryResult.success) {
         installError(QStringLiteral("Desktop entry: ") + entryResult.error);
@@ -255,10 +293,22 @@ void AppInstaller::finishInstall()
         metaInput.displayMode = m_installResult.displayMode;
     if (!m_installResult.themeColor.isEmpty())
         metaInput.themeColor = m_installResult.themeColor;
+    if (!m_installResult.backgroundColor.isEmpty())
+        metaInput.backgroundColor = m_installResult.backgroundColor;
     if (!m_installResult.startUrl.isEmpty())
         metaInput.startUrl = m_installResult.startUrl;
     if (!m_installResult.scope.isEmpty())
         metaInput.scope = m_installResult.scope;
+    if (!m_installResult.manifestId.isEmpty())
+        metaInput.manifestId = m_installResult.manifestId;
+    if (!m_installResult.displayOverride.isEmpty())
+        metaInput.displayOverride = m_installResult.displayOverride;
+    if (!m_installResult.shortcuts.isEmpty())
+        metaInput.shortcuts = m_installResult.shortcuts;
+    if (!m_installResult.mimeTypes.isEmpty())
+        metaInput.mimeTypes = m_installResult.mimeTypes;
+    if (!m_installResult.protocolHandlers.isEmpty())
+        metaInput.protocolHandlers = m_installResult.protocolHandlers;
 
     auto metaResult = qapp::AppMetadata::build(metaInput);
     if (!metaResult.success) {
@@ -395,8 +445,21 @@ void AppInstaller::listApps()
 
 void AppInstaller::launch(const QString &appId, const QString &url)
 {
-    QString wrapperPath = QCoreApplication::applicationDirPath() + QStringLiteral("/qapp-ws-wrapper");
-    QProcess::startDetached(wrapperPath, {appId, url});
+    // Read wrapperPath from metadata (respects PWAPP→pwa-app vs WS/WAPP→ws-wrapper)
+    auto pathsResult = qapp::XdgPaths::resolveAppPaths(appId);
+    if (pathsResult.success) {
+        auto metaResult = qapp::ConfigReader::readJson(pathsResult.data.metadataFile);
+        if (metaResult.success) {
+            QString wrapperPath = metaResult.data.value(QStringLiteral("wrapperPath")).toString();
+            if (!wrapperPath.isEmpty()) {
+                QProcess::startDetached(wrapperPath, {appId, url});
+                return;
+            }
+        }
+    }
+    // Fallback: ws-wrapper (legacy apps without metadata)
+    QString fallback = QCoreApplication::applicationDirPath() + QStringLiteral("/qapp-ws-wrapper");
+    QProcess::startDetached(fallback, {appId, url});
 }
 
 // --- Self-update (runs bash script, no Node.js) ---
