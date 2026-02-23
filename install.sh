@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # QApp Framework — Developer Preview Installer (alpha)
-# Clones, builds, and installs QApp from source.
+# Builds and installs QApp from source. Pure C++/Qt6 — no Node.js required.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/QAppFramework/QApp/main/install.sh | bash
 #   — or —
-#   git clone https://github.com/QAppFramework/QApp.git && cd QApp && ./install.sh
+#   git clone https://github.com/QAppFramework/QApp.git && cd QApp && bash install.sh
 #
 # Licensed under EUPL v1.2
 
@@ -13,7 +13,6 @@ set -euo pipefail
 
 REPO_URL="https://github.com/QAppFramework/QApp.git"
 INSTALL_DIR="$HOME/.local/share/qapp-framework"
-BIN_DIR="$HOME/.local/bin"
 
 # Colors
 RED='\033[0;31m'
@@ -34,16 +33,11 @@ check_command() {
 
 info "Checking prerequisites..."
 
-check_command node    "Install Node.js 20+ (https://nodejs.org)"
-check_command npm     "Comes with Node.js"
 check_command cmake   "Install: sudo apt install cmake"
 check_command g++     "Install: sudo apt install g++"
+check_command git     "Install: sudo apt install git"
 
-# Check Node.js version (need 20+)
-NODE_VER=$(node -v | sed 's/v//' | cut -d. -f1)
-[ "$NODE_VER" -ge 20 ] 2>/dev/null || die "Node.js 20+ required (found: $(node -v))"
-
-# Check Qt6 dev packages
+# Check Qt6 dev packages via pkg-config
 pkg-config --exists Qt6Core Qt6Quick Qt6WebEngineQuick 2>/dev/null || {
     error "Qt6 development packages not found."
     echo ""
@@ -64,7 +58,7 @@ info "All prerequisites met."
 
 SOURCE_DIR=""
 
-if [ -f "CMakeLists.txt" ] && [ -f "package.json" ] && grep -q "qapp" package.json 2>/dev/null; then
+if [ -f "CMakeLists.txt" ] && grep -q "qapp-framework" CMakeLists.txt 2>/dev/null; then
     info "Running from QApp source directory."
     SOURCE_DIR="$(pwd)"
 else
@@ -77,48 +71,31 @@ fi
 
 cd "$SOURCE_DIR"
 
-# ── Install npm dependencies ──────────────────────────────────
-
-info "Installing Node.js dependencies..."
-npm install --omit=dev --silent 2>/dev/null || npm install --omit=dev
-
 # ── Build with CMake ──────────────────────────────────────────
 
 info "Building QApp (cmake)..."
 cmake -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev 2>/dev/null
 cmake --build build --parallel
 
-[ -f "build/qapp-installer" ]          || die "Build failed: qapp-installer binary not found"
-[ -f "build/qapp-wrapper" ] || die "Build failed: qapp-wrapper binary not found"
+[ -f "build/qapp-installer" ]   || die "Build failed: qapp-installer binary not found"
+[ -f "build/qapp-ws-wrapper" ]  || die "Build failed: qapp-ws-wrapper binary not found"
+[ -f "build/qapp-pwa-app" ]     || die "Build failed: qapp-pwa-app binary not found"
 
-info "Build successful."
+info "Build successful — 3 binaries."
 
 # ── Install to ~/.local/share/qapp-framework/ ────────────────
 
 info "Installing to $INSTALL_DIR ..."
 
 mkdir -p "$INSTALL_DIR/app"
-mkdir -p "$INSTALL_DIR/bin"
-mkdir -p "$INSTALL_DIR/src"
-mkdir -p "$BIN_DIR"
 
 # Binaries
-cp build/qapp-installer "$INSTALL_DIR/app/"
-cp build/qapp-wrapper   "$INSTALL_DIR/app/"
+cp build/qapp-installer  "$INSTALL_DIR/app/"
+cp build/qapp-ws-wrapper "$INSTALL_DIR/app/"
+cp build/qapp-pwa-app    "$INSTALL_DIR/app/"
 
-# CLI scripts
-cp bin/*.js "$INSTALL_DIR/bin/"
-
-# JS source modules
-cp src/*.js "$INSTALL_DIR/src/"
-cp src/*.d.ts "$INSTALL_DIR/src/" 2>/dev/null || true
-
-# Package files + dependencies
-cp package.json "$INSTALL_DIR/"
-cp -r node_modules "$INSTALL_DIR/"
-
-# Config files needed for typecheck (not critical for runtime)
-cp jsconfig.json "$INSTALL_DIR/" 2>/dev/null || true
+# Self-updater
+cp bin/update.sh "$INSTALL_DIR/app/" 2>/dev/null || true
 
 # ── Create .desktop entry ─────────────────────────────────────
 
@@ -143,19 +120,18 @@ update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 # ── Summary ───────────────────────────────────────────────────
 
 echo ""
-info "╔══════════════════════════════════════════════╗"
-info "║  QApp installed successfully! (alpha)        ║"
-info "╠══════════════════════════════════════════════╣"
-info "║                                              ║"
-info "║  Launch from KDE/GNOME menu: search 'QApp'   ║"
-info "║                                              ║"
-info "║  Or from terminal:                           ║"
-info "║    $INSTALL_DIR/app/qapp-installer ║"
-info "║                                              ║"
-info "║  CLI tools:                                  ║"
-info "║    node $INSTALL_DIR/bin/install.js <url>    ║"
-info "║    node $INSTALL_DIR/bin/list.js             ║"
-info "║    node $INSTALL_DIR/bin/uninstall.js <id>   ║"
-info "║                                              ║"
-info "╚══════════════════════════════════════════════╝"
-echo ""
+info "============================================"
+info "  QApp installed successfully! (alpha)"
+info "============================================"
+info ""
+info "  Launch from KDE/GNOME menu: search 'QApp'"
+info ""
+info "  Or from terminal:"
+info "    $INSTALL_DIR/app/qapp-installer"
+info ""
+info "  CLI commands:"
+info "    qapp-installer --classify <url>"
+info "    qapp-installer --install <url>"
+info "    qapp-installer --list"
+info "    qapp-installer --uninstall <app-id>"
+info ""
