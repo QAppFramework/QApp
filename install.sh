@@ -97,6 +97,20 @@ cp build/qapp-pwa-app    "$INSTALL_DIR/app/"
 # Self-updater
 cp bin/update.sh "$INSTALL_DIR/app/" 2>/dev/null || true
 
+# ── Clean up legacy installs ──────────────────────────────────
+
+# Remove old "qapp" desktop entry (pre-rename, pointed to ~/.local/share/qapp/)
+if [ -f "$HOME/.local/share/applications/qapp.desktop" ]; then
+    rm -f "$HOME/.local/share/applications/qapp.desktop"
+    info "Removed legacy qapp.desktop entry."
+fi
+
+# Remove old install dir (pre-rename)
+if [ -d "$HOME/.local/share/qapp/app" ]; then
+    rm -rf "$HOME/.local/share/qapp/app"
+    info "Removed legacy ~/.local/share/qapp/app/ directory."
+fi
+
 # ── Create .desktop entry ─────────────────────────────────────
 
 info "Creating desktop launcher..."
