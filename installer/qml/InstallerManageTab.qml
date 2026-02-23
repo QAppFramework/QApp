@@ -119,7 +119,7 @@ ColumnLayout {
                     font.pixelSize: 12
                     visible: manageTab.hasAppUpdate(modelData.appId)
                     enabled: !manageTab.appInstaller.busy
-                    onClicked: manageTab.appInstaller.install(modelData.url)
+                    onClicked: manageTab.appInstaller.install(modelData.url, "", modelData.appId)
                 }
 
                 Button {

@@ -44,7 +44,8 @@ public:
     bool checkingUpdates() const { return m_checkingUpdates; }
 
     Q_INVOKABLE void reset();
-    Q_INVOKABLE void install(const QString &url, const QString &customIconPath = QString());
+    Q_INVOKABLE void install(const QString &url, const QString &customIconPath = QString(),
+                             const QString &existingAppId = QString());
     Q_INVOKABLE void installFromData(const QString &classifyResultJson, const QString &customIconPath = QString());
     Q_INVOKABLE void uninstall(const QString &appId);
     Q_INVOKABLE void listApps();
@@ -84,6 +85,7 @@ private:
     qapp::AppPaths m_installPaths;
     QString m_installUrl;
     QString m_wrapperPath;
+    QString m_existingAppId;
 
     // List state
     QJsonArray m_installedApps;

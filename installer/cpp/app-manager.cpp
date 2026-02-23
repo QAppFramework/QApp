@@ -36,6 +36,7 @@ void AppInstaller::clearResult()
     m_appName.clear();
     m_desktopPath.clear();
     m_errorMessage.clear();
+    m_existingAppId.clear();
 }
 
 void AppInstaller::installError(const QString &msg)
@@ -48,11 +49,13 @@ void AppInstaller::installError(const QString &msg)
 
 // --- Install from URL (classify first, then install) ---
 
-void AppInstaller::install(const QString &url, const QString &customIconPath)
+void AppInstaller::install(const QString &url, const QString &customIconPath,
+                           const QString &existingAppId)
 {
     if (m_busy) return;
 
     clearResult();
+    m_existingAppId = existingAppId;
     m_busy = true;
     emit busyChanged();
 
@@ -119,13 +122,17 @@ void AppInstaller::doInstall(const ClassifyResult &result, const QString &custom
 {
     m_installResult = result;
 
-    // Generate app ID from final URL
-    auto idResult = qapp::UrlHelpers::generateAppId(result.finalUrl);
-    if (!idResult.success) {
-        installError(QStringLiteral("App ID: ") + idResult.error);
-        return;
+    // Use existing appId for updates, generate from finalUrl for new installs
+    if (!m_existingAppId.isEmpty()) {
+        m_installAppId = m_existingAppId;
+    } else {
+        auto idResult = qapp::UrlHelpers::generateAppId(result.finalUrl);
+        if (!idResult.success) {
+            installError(QStringLiteral("App ID: ") + idResult.error);
+            return;
+        }
+        m_installAppId = idResult.data;
     }
-    m_installAppId = idResult.data;
 
     // Launch URL: startUrl (if present) → finalUrl
     m_installUrl = result.startUrl.isEmpty() ? result.finalUrl : result.startUrl;
