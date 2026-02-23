@@ -1,8 +1,11 @@
 #include <QApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QSettings>
 #include <QtWebEngineQuick>
 #include <QtQml/qqmlextensionplugin.h>
+#include "config-reader.hpp"
+#include "xdg-paths.hpp"
 
 Q_IMPORT_QML_PLUGIN(QApp_CommonPlugin)
 
@@ -33,6 +36,18 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName(appName);
     app.setOrganizationName(QStringLiteral("QAppFramework"));
+
+    // Set window icon from installed app metadata
+    auto paths = qapp::XdgPaths::resolveAppPaths(appId);
+    if (paths.success) {
+        auto meta = qapp::ConfigReader::readJson(paths.data.metadataFile);
+        if (meta.success) {
+            QString iconPath = meta.data.value("iconPath").toString();
+            if (!iconPath.isEmpty()) {
+                app.setWindowIcon(QIcon(iconPath));
+            }
+        }
+    }
 
     QQmlApplicationEngine engine;
     engine.addImportPath(QStringLiteral("qrc:/"));

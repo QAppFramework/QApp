@@ -38,6 +38,7 @@ void WrapperHelper::loadMetadata(const QString &appId)
     m_displayMode = obj.value("displayMode").toString();
     m_themeColor = obj.value("themeColor").toString();
     m_scope = obj.value("scope").toString();
+    m_iconPath = obj.value("iconPath").toString();
 
     // Resolve startUrl
     QString startUrl = obj.value("startUrl").toString();

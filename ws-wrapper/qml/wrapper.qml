@@ -95,7 +95,10 @@ ApplicationWindow {
 
         helper.loadMetadata(root.appId)
         tabView.restoreTabs()
-        if (root.isFullscreen) root.showFullScreen()
+        if (root.isFullscreen) {
+            root.showFullScreen()
+            fullscreenHint.show()
+        }
     }
     onClosing: tabView.saveTabs()
 
@@ -179,6 +182,17 @@ ApplicationWindow {
         onSaveRequested: function(url, name) {
             helper.saveAsApp(url, name)
         }
+    }
+
+    WrapperFullscreenHint {
+        id: fullscreenHint
+        anchors.centerIn: parent
+        appId: root.appId
+    }
+
+    onVisibilityChanged: {
+        if (root.isFullscreen && root.visibility === ApplicationWindow.FullScreen)
+            fullscreenHint.show()
     }
 
     footer: ToolBar {

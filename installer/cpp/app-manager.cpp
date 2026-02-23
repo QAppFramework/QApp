@@ -23,6 +23,12 @@ AppInstaller::AppInstaller(QObject *parent)
 {
 }
 
+void AppInstaller::reset()
+{
+    clearResult();
+    emit resultChanged();
+}
+
 void AppInstaller::clearResult()
 {
     m_installed = false;
@@ -270,6 +276,21 @@ void AppInstaller::finishInstall()
     m_busy = false;
     emit busyChanged();
     emit resultChanged();
+
+    // Clear update entry for this app (so Update button disappears)
+    QJsonArray filtered;
+    for (const auto &val : m_appUpdates) {
+        QJsonObject entry = val.toObject();
+        if (entry[QStringLiteral("appId")].toString() != m_installAppId)
+            filtered.append(entry);
+    }
+    if (filtered.size() != m_appUpdates.size()) {
+        m_appUpdates = filtered;
+        emit appUpdatesChanged();
+    }
+
+    // Refresh installed apps list
+    listApps();
 }
 
 // --- Uninstall ---

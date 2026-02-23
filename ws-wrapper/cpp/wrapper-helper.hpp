@@ -20,6 +20,7 @@ class WrapperHelper : public QObject
     Q_PROPERTY(QString themeColor READ themeColor NOTIFY metadataChanged)
     Q_PROPERTY(QString metadataStartUrl READ metadataStartUrl NOTIFY metadataChanged)
     Q_PROPERTY(QString scope READ scope NOTIFY metadataChanged)
+    Q_PROPERTY(QString iconPath READ iconPath NOTIFY metadataChanged)
 
 public:
     explicit WrapperHelper(QObject *parent = nullptr);
@@ -32,6 +33,7 @@ public:
     QString themeColor() const { return m_themeColor; }
     QString metadataStartUrl() const { return m_metadataStartUrl; }
     QString scope() const { return m_scope; }
+    QString iconPath() const { return m_iconPath; }
 
     Q_INVOKABLE void saveAsApp(const QString &url, const QString &name);
     Q_INVOKABLE void loadMetadata(const QString &appId);
@@ -51,6 +53,7 @@ private:
     QString m_themeColor;
     QString m_metadataStartUrl;
     QString m_scope;
+    QString m_iconPath;
 };
 
 } // namespace qapp::ws

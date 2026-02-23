@@ -116,6 +116,8 @@ set_source_files_properties(ws-wrapper/qml/WrapperSettingsDialog.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/WrapperSettingsDialog.qml)
 set_source_files_properties(ws-wrapper/qml/WrapperSaveDialog.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/WrapperSaveDialog.qml)
+set_source_files_properties(ws-wrapper/qml/WrapperFullscreenHint.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperFullscreenHint.qml)
 
 qt_add_qml_module(qapp-ws-wrapper
     URI QApp.WS
@@ -127,6 +129,7 @@ qt_add_qml_module(qapp-ws-wrapper
         ws-wrapper/qml/WrapperTabView.qml
         ws-wrapper/qml/WrapperSettingsDialog.qml
         ws-wrapper/qml/WrapperSaveDialog.qml
+        ws-wrapper/qml/WrapperFullscreenHint.qml
 )
 
 if(QAPP_DEV_BUILD)

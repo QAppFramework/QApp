@@ -11,8 +11,8 @@ ColumnLayout {
 
     property string customIconPath: ""
 
-    // URL validation — matches http(s)://domain.tld with optional path
-    readonly property var _urlPattern: /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+([\/\w\-._~:?#[\]@!$&'()*+,;=%]*)?$/
+    // URL validation — accepts domains, bare hostnames (mimer, localhost), IPs, optional port
+    readonly property var _urlPattern: /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*(:\d{1,5})?([\/\w\-._~:?#[\]@!$&'()*+,;=%]*)?$/
 
     function isValidUrl(text) {
         if (text.length === 0) return false
@@ -94,6 +94,7 @@ ColumnLayout {
 
             onClicked: {
                 installTab.customIconPath = ""
+                installTab.appInstaller.reset()
                 var url = installTab.normalizeUrl(urlField.text)
                 installTab.classifier.classify(url)
             }

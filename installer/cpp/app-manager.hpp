@@ -43,6 +43,7 @@ public:
     QJsonArray appUpdates() const { return m_appUpdates; }
     bool checkingUpdates() const { return m_checkingUpdates; }
 
+    Q_INVOKABLE void reset();
     Q_INVOKABLE void install(const QString &url, const QString &customIconPath = QString());
     Q_INVOKABLE void installFromData(const QString &classifyResultJson, const QString &customIconPath = QString());
     Q_INVOKABLE void uninstall(const QString &appId);

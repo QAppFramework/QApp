@@ -5,9 +5,9 @@
 namespace qapp {
 
 namespace {
-// Same regex pattern as JS url-validator.js and QML main.qml
+// URL pattern: accepts domains, bare hostnames (mimer, localhost), IPs, optional port
 const QRegularExpression kUrlPattern(
-    QStringLiteral(R"(^https?://[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+([\w\-._~:/?#\[\]@!$&'()*+,;=%]*)?)"));
+    QStringLiteral(R"(^https?://[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*(:\d{1,5})?([\w\-._~:/?#\[\]@!$&'()*+,;=%]*)?)"));
 } // anonymous namespace
 
 bool UrlHelpers::isValidUrl(const QString &text)
