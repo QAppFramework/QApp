@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=QApp
+Comment=Turn any website into a standalone desktop app
+Exec=qapp-installer
+Icon=qapp-installer
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;Utility;
+Keywords=web;app;pwa;wrapper;install;

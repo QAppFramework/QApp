@@ -252,6 +252,9 @@ install(FILES assets/icons/qapp.svg
     DESTINATION share/icons/hicolor/scalable/apps
     RENAME qapp-installer.svg)
 
+install(FILES assets/qapp-installer.desktop
+    DESTINATION share/applications)
+
 # --- CPack packaging ---
 set(CPACK_PACKAGE_NAME "qapp-framework")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
