@@ -94,8 +94,9 @@ cp build/qapp-installer  "$INSTALL_DIR/app/"
 cp build/qapp-ws-wrapper "$INSTALL_DIR/app/"
 cp build/qapp-pwa-app    "$INSTALL_DIR/app/"
 
-# Self-updater
+# Self-updater + assets
 cp bin/update.sh "$INSTALL_DIR/app/" 2>/dev/null || true
+cp assets/icons/qapp.svg "$INSTALL_DIR/app/" 2>/dev/null || true
 
 # ── Create .desktop entry ─────────────────────────────────────
 
@@ -109,7 +110,7 @@ Type=Application
 Name=QApp
 Comment=Install websites as standalone desktop apps
 Exec=$INSTALL_DIR/app/qapp-installer
-Icon=applications-internet
+Icon=$INSTALL_DIR/app/qapp.svg
 Terminal=false
 StartupNotify=true
 Categories=Network;WebBrowser;Utility;
