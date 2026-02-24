@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Widgets WebEngineQuick Network DBus)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Widgets WebEngineQuick Network DBus Test)
 
 # --- qapp-common: shared static library (namespace qapp::) ---
 qt_add_library(qapp-common STATIC
@@ -223,3 +223,49 @@ target_link_libraries(qapp-pwa-app PRIVATE
     Qt6::DBus
 )
 
+# --- Tests (QTest) ---
+enable_testing()
+
+function(qapp_add_test name)
+    qt_add_executable(${name} tests/${name}.cpp)
+    target_link_libraries(${name} PRIVATE qapp-common Qt6::Test)
+    add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+qapp_add_test(test-config-reader)
+qapp_add_test(test-xdg-paths)
+qapp_add_test(test-url-helpers)
+qapp_add_test(test-desktop-entry)
+qapp_add_test(test-app-metadata)
+qapp_add_test(test-html-parser)
+qapp_add_test(test-manifest-parser)
+qapp_add_test(test-icon-manager)
+
+# --- Install targets ---
+install(TARGETS qapp-installer qapp-ws-wrapper qapp-pwa-app
+    RUNTIME DESTINATION bin)
+
+install(PROGRAMS bin/update.sh
+    DESTINATION share/qapp-framework)
+
+install(FILES assets/icons/qapp.svg
+    DESTINATION share/icons/hicolor/scalable/apps
+    RENAME qapp-installer.svg)
+
+# --- CPack packaging ---
+set(CPACK_PACKAGE_NAME "qapp-framework")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Turn any website into a standalone desktop app")
+set(CPACK_PACKAGE_CONTACT "QAppFramework <https://github.com/QAppFramework/QApp>")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/QAppFramework/QApp")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+
+# DEB
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgl1, libnss3, libxcomposite1, libxdamage1, libxrandr2, libxtst6")
+
+# RPM
+set(CPACK_RPM_PACKAGE_LICENSE "EUPL-1.2")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/Internet")
+
+include(CPack)
