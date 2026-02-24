@@ -51,8 +51,9 @@ static int runGui(int argc, char *argv[])
     app.setApplicationName(QAPP_APP_ID);
     app.setApplicationVersion("0.1.0");
     app.setOrganizationName("TwistedBrain");
+    app.setDesktopFileName(u"qapp-installer"_s);
 
-    // Set app icon from installed assets
+    // Set app icon from installed assets (fallback if KDE .desktop lookup fails)
     QString dataDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
                       + u"/qapp-framework/app"_s;
     QString iconPath = dataDir + u"/qapp.svg"_s;
