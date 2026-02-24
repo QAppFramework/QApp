@@ -31,8 +31,8 @@ ToolBar {
         color: toolbar.hasBg ? toolbar.themeColor : palette.window
     }
 
-    palette.buttonText: toolbar.isDark ? "#ffffff" : palette.buttonText
-    palette.windowText: toolbar.isDark ? "#ffffff" : palette.windowText
+    palette.buttonText: toolbar.isDark ? "#ffffff" : undefined
+    palette.windowText: toolbar.isDark ? "#ffffff" : undefined
 
     RowLayout {
         anchors.fill: parent

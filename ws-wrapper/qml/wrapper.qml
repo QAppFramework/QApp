@@ -140,7 +140,7 @@ ApplicationWindow {
         canGoBack: tabView.currentView ? tabView.currentView.canGoBack : false
         canGoForward: tabView.currentView ? tabView.currentView.canGoForward : false
 
-        onTabIndexChanged: tabView.setCurrentIndex(index)
+        onTabIndexChanged: function(index) { tabView.setCurrentIndex(index) }
         onCloseTabRequested: tabView.closeTab(index)
         onNewTabRequested: tabView.addTab(root.startUrl)
         onGoBackRequested: { var v = tabView.currentView; if (v) v.goBack() }

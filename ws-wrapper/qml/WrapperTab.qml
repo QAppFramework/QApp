@@ -44,17 +44,17 @@ WebEngineView {
         // Always allow back/forward/reload
         if (request.navigationType === WebEngineNavigationRequest.BackForwardNavigation ||
             request.navigationType === WebEngineNavigationRequest.ReloadNavigation) {
-            request.action = WebEngineNavigationRequest.AcceptRequest
+            request.accept()
             return
         }
         // For link clicks and form submissions, check scope
         var reqUrl = request.url.toString()
         if (!isInScope(reqUrl)) {
-            request.action = WebEngineNavigationRequest.IgnoreRequest
+            request.reject()
             Qt.openUrlExternally(reqUrl)
             return
         }
-        request.action = WebEngineNavigationRequest.AcceptRequest
+        request.accept()
     }
 
     onContextMenuRequested: function(request) {

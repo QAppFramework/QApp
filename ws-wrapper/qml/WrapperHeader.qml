@@ -34,8 +34,8 @@ ToolBar {
         color: headerToolBar.hasThemeColor ? headerToolBar.themeColor : palette.window
     }
 
-    palette.buttonText: headerToolBar.darkTheme ? "#ffffff" : palette.buttonText
-    palette.windowText: headerToolBar.darkTheme ? "#ffffff" : palette.windowText
+    palette.buttonText: headerToolBar.darkTheme ? "#ffffff" : undefined
+    palette.windowText: headerToolBar.darkTheme ? "#ffffff" : undefined
 
     RowLayout {
         anchors.fill: parent
@@ -88,7 +88,7 @@ ToolBar {
                             implicitWidth: 20
                             implicitHeight: 20
                             visible: headerToolBar.tabModel.count > 1
-                            onClicked: headerToolBar.closeTabRequested(index)
+                            onClicked: headerToolBar.closeTabRequested(model.index)
                         }
                     }
                 }

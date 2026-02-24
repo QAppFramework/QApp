@@ -30,13 +30,18 @@ ApplicationWindow {
         storageName: root.appId; offTheRecord: false
         persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
         httpCacheType: WebEngineProfile.DiskHttpCache
-        pushServiceEnabled: true
-        onPresentNotification: function(notification) {
-            notifHandler.show(notification.title, notification.message)
-            notification.show()
-        }
         onDownloadRequested: function(download) {
             downloadHandler.handleDownload(download)
+        }
+    }
+
+    // Version-safe: pushServiceEnabled + presentNotification may not exist in all Qt versions
+    Connections {
+        target: appProfile
+        ignoreUnknownSignals: true
+        function onPresentNotification(notification) {
+            notifHandler.show(notification.title, notification.message)
+            notification.show()
         }
     }
 
@@ -133,7 +138,7 @@ ApplicationWindow {
             if (helper.scope && request.navigationType === WebEngineNavigationRequest.LinkClickedNavigation) {
                 var targetUrl = request.url.toString()
                 if (targetUrl.indexOf(helper.scope) !== 0) {
-                    request.action = WebEngineNavigationRequest.IgnoreRequest
+                    request.reject()
                     Qt.openUrlExternally(request.url)
                 }
             }
@@ -181,6 +186,8 @@ ApplicationWindow {
 
     Component.onCompleted: {
         appProfile.httpUserAgent = appProfile.httpUserAgent.replace(/QtWebEngine\/[\d.]+ /, "")
+        if ("pushServiceEnabled" in appProfile)
+            appProfile.pushServiceEnabled = true
         helper.loadMetadata(root.appId)
     }
     Connections {
