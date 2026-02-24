@@ -108,6 +108,11 @@ ApplicationWindow {
     QAppResumeOverlay {
         anchors.fill: parent
         windowActive: root.active
+        onResumed: {
+            if ("lifecycleState" in webView)
+                webView.lifecycleState = 0 // WebEngineView.LifecycleState.Active
+            webView.forceActiveFocus()
+        }
     }
 
     PwaSplashScreen {

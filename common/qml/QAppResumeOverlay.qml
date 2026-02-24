@@ -6,6 +6,8 @@ Rectangle {
 
     required property bool windowActive
 
+    signal resumed()
+
     visible: false
     color: Qt.rgba(palette.window.r, palette.window.g, palette.window.b, 0.75)
     z: 900
@@ -25,6 +27,7 @@ Rectangle {
         } else if (_deactivatedAt > 0 && (Date.now() - _deactivatedAt) > 500) {
             overlay.opacity = 1.0
             overlay.visible = true
+            overlay.resumed()
             dismissTimer.restart()
         }
     }

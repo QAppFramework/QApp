@@ -1,9 +1,11 @@
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QIcon>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QStandardPaths>
 #include <QtWebEngineQuick>
 #include <QtQml/qqmlextensionplugin.h>
 #include <cstring>
@@ -49,6 +51,13 @@ static int runGui(int argc, char *argv[])
     app.setApplicationName(QAPP_APP_ID);
     app.setApplicationVersion("0.1.0");
     app.setOrganizationName("TwistedBrain");
+
+    // Set app icon from installed assets
+    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+                      + u"/qapp-framework/app"_s;
+    QString iconPath = dataDir + u"/qapp.svg"_s;
+    if (QFile::exists(iconPath))
+        app.setWindowIcon(QIcon(iconPath));
 
     QQuickStyle::setStyle("Fusion");
 

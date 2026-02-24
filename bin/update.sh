@@ -54,8 +54,9 @@ for bin in qapp-installer qapp-ws-wrapper qapp-pwa-app; do
     rm -f "$INSTALL_DIR/app/$bin.old"
 done
 
-# Self-updater
+# Self-updater + assets
 cp bin/update.sh "$INSTALL_DIR/app/" 2>/dev/null || true
+cp assets/icons/qapp.svg "$INSTALL_DIR/app/" 2>/dev/null || true
 
 info "QApp updated successfully."
 info "Restart QApp and all wrapper apps to use the new version."

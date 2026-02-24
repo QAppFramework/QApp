@@ -194,6 +194,14 @@ ApplicationWindow {
     QAppResumeOverlay {
         anchors.fill: parent
         windowActive: root.active
+        onResumed: {
+            var view = tabView.currentView
+            if (view) {
+                if ("lifecycleState" in view)
+                    view.lifecycleState = 0 // WebEngineView.LifecycleState.Active
+                view.forceActiveFocus()
+            }
+        }
     }
 
     WrapperFullscreenHint {
