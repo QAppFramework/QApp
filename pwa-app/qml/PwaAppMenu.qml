@@ -15,7 +15,7 @@ Menu {
     signal zoomOutRequested()
     signal zoomResetRequested()
     signal openInBrowserRequested()
-    signal printRequested()
+
     signal aboutRequested()
     signal licenseRequested()
 
@@ -59,11 +59,6 @@ Menu {
     MenuItem {
         text: "\u2197  Open in Browser"
         onTriggered: appMenu.openInBrowserRequested()
-    }
-
-    MenuItem {
-        text: "\U0001F5A8  Print..."
-        onTriggered: appMenu.printRequested()
     }
 
     MenuSeparator {}

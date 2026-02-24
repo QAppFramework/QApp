@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtCore
 import QApp.Installer
 import QApp.Common
 
@@ -12,6 +13,15 @@ ApplicationWindow {
     minimumHeight: 300
     visible: true
     title: Qt.application.name === "qapp-installer-dev" ? "QApp Dev" : "QApp"
+
+    Settings {
+        id: windowSettings
+        category: "window"
+        property alias x: root.x
+        property alias y: root.y
+        property alias width: root.width
+        property alias height: root.height
+    }
 
     SiteClassifier {
         id: classifier

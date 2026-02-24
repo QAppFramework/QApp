@@ -98,7 +98,6 @@ ApplicationWindow {
         onZoomOutRequested: webView.zoomFactor = Math.max(webView.zoomFactor - 0.1, 0.3)
         onZoomResetRequested: webView.zoomFactor = 1.0
         onOpenInBrowserRequested: Qt.openUrlExternally(webView.url)
-        onPrintRequested: webView.printToPdf("", webView.contentsSize)
         onAboutRequested: aboutDialog.open()
         onLicenseRequested: Qt.openUrlExternally("https://eupl.eu/1.2/en/")
     }
