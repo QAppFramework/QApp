@@ -17,12 +17,16 @@ ToolBar {
     required property int currentTabIndex
     required property bool canGoBack
     required property bool canGoForward
+    required property real zoomFactor
 
     signal tabIndexChanged(int index)
     signal closeTabRequested(int index)
     signal newTabRequested()
     signal goBackRequested()
     signal goForwardRequested()
+    signal zoomInRequested()
+    signal zoomOutRequested()
+    signal zoomResetRequested()
     signal settingsRequested()
     signal aboutRequested()
     signal licenseRequested()
@@ -136,6 +140,24 @@ ToolBar {
         Action {
             text: "Settings..."
             onTriggered: headerToolBar.settingsRequested()
+        }
+
+        MenuSeparator {}
+
+        MenuItem {
+            text: "\uFF0B  Zoom In"
+            onTriggered: headerToolBar.zoomInRequested()
+        }
+
+        MenuItem {
+            text: "\uFF0D  Zoom Out"
+            onTriggered: headerToolBar.zoomOutRequested()
+        }
+
+        MenuItem {
+            text: "100%  Reset Zoom"
+            enabled: Math.abs(headerToolBar.zoomFactor - 1.0) > 0.01
+            onTriggered: headerToolBar.zoomResetRequested()
         }
 
         MenuSeparator {}

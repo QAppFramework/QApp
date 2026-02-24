@@ -180,6 +180,9 @@ ApplicationWindow {
         onCancelRequested: downloadHandler.cancelDownload()
     }
 
+    Shortcut { sequence: "Ctrl+="; onActivated: webView.zoomFactor = Math.min(webView.zoomFactor + 0.1, 3.0) }
+    Shortcut { sequence: "Ctrl+-"; onActivated: webView.zoomFactor = Math.max(webView.zoomFactor - 0.1, 0.3) }
+    Shortcut { sequence: "Ctrl+0"; onActivated: webView.zoomFactor = 1.0 }
     Shortcut { sequence: "F10"; onActivated: pwaMenu.popup() }
     Shortcut {
         sequence: "F11"

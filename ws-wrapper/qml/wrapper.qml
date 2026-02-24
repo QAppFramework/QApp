@@ -111,6 +111,19 @@ ApplicationWindow {
     }
 
     Shortcut {
+        sequence: "Ctrl+="
+        onActivated: { var v = tabView.currentView; if (v) v.zoomFactor = Math.min(v.zoomFactor + 0.1, 3.0) }
+    }
+    Shortcut {
+        sequence: "Ctrl+-"
+        onActivated: { var v = tabView.currentView; if (v) v.zoomFactor = Math.max(v.zoomFactor - 0.1, 0.3) }
+    }
+    Shortcut {
+        sequence: "Ctrl+0"
+        onActivated: { var v = tabView.currentView; if (v) v.zoomFactor = 1.0 }
+    }
+
+    Shortcut {
         sequence: "F11"
         onActivated: {
             if (root.visibility === ApplicationWindow.FullScreen) {
@@ -139,12 +152,16 @@ ApplicationWindow {
 
         canGoBack: tabView.currentView ? tabView.currentView.canGoBack : false
         canGoForward: tabView.currentView ? tabView.currentView.canGoForward : false
+        zoomFactor: tabView.currentView ? tabView.currentView.zoomFactor : 1.0
 
         onTabIndexChanged: function(index) { tabView.setCurrentIndex(index) }
         onCloseTabRequested: tabView.closeTab(index)
         onNewTabRequested: tabView.addTab(root.startUrl)
         onGoBackRequested: { var v = tabView.currentView; if (v) v.goBack() }
         onGoForwardRequested: { var v = tabView.currentView; if (v) v.goForward() }
+        onZoomInRequested: { var v = tabView.currentView; if (v) v.zoomFactor = Math.min(v.zoomFactor + 0.1, 3.0) }
+        onZoomOutRequested: { var v = tabView.currentView; if (v) v.zoomFactor = Math.max(v.zoomFactor - 0.1, 0.3) }
+        onZoomResetRequested: { var v = tabView.currentView; if (v) v.zoomFactor = 1.0 }
         onSettingsRequested: settingsDialog.open()
         onAboutRequested: aboutDialog.open()
         onLicenseRequested: Qt.openUrlExternally("https://eupl.eu/1.2/en/")
