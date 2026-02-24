@@ -5,7 +5,6 @@
 #include <QJsonDocument>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
-#include <QStandardPaths>
 #include <QtWebEngineQuick>
 #include <QtQml/qqmlextensionplugin.h>
 #include <cstring>
@@ -52,13 +51,7 @@ static int runGui(int argc, char *argv[])
     app.setApplicationVersion("0.1.0");
     app.setOrganizationName("TwistedBrain");
     app.setDesktopFileName(u"qapp-installer"_s);
-
-    // Set app icon from installed assets (fallback if KDE .desktop lookup fails)
-    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
-                      + u"/qapp-framework/app"_s;
-    QString iconPath = dataDir + u"/qapp.svg"_s;
-    if (QFile::exists(iconPath))
-        app.setWindowIcon(QIcon(iconPath));
+    app.setWindowIcon(QIcon(u":/QApp/Installer/icons/qapp-dark-500.png"_s));
 
     QQuickStyle::setStyle("Fusion");
 

@@ -72,6 +72,11 @@ set_source_files_properties(installer/qml/InstallerManageTab.qml
 set_source_files_properties(installer/qml/InstallerUpdateDialog.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/InstallerUpdateDialog.qml)
 
+set_source_files_properties(assets/icons/qapp-dark-500.png
+    PROPERTIES QT_RESOURCE_ALIAS icons/qapp-dark-500.png)
+set_source_files_properties(assets/icons/qapp-top-dark-500.png
+    PROPERTIES QT_RESOURCE_ALIAS icons/qapp-top-dark-500.png)
+
 qt_add_qml_module(qapp-installer
     URI QApp.Installer
     VERSION 1.0
@@ -81,6 +86,9 @@ qt_add_qml_module(qapp-installer
         installer/qml/InstallerResultsPanel.qml
         installer/qml/InstallerManageTab.qml
         installer/qml/InstallerUpdateDialog.qml
+    RESOURCES
+        assets/icons/qapp-dark-500.png
+        assets/icons/qapp-top-dark-500.png
 )
 
 target_include_directories(qapp-installer PRIVATE ${CMAKE_SOURCE_DIR}/installer/cpp)

@@ -76,6 +76,15 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: 12
+                spacing: 8
+
+                Image {
+                    source: "qrc:/QApp/Installer/icons/qapp-top-dark-500.png"
+                    sourceSize.width: 28
+                    sourceSize.height: 28
+                    Layout.preferredWidth: 28
+                    Layout.preferredHeight: 28
+                }
 
                 Label {
                     text: root.title
