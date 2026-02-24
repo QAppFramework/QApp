@@ -516,7 +516,12 @@ void AppInstaller::updateQApp()
         }
     });
 
-    QString scriptPath = QCoreApplication::applicationDirPath() + QStringLiteral("/../bin/update.sh");
+    // Installed: update.sh is in same dir as binary (~/.local/share/qapp-framework/app/)
+    // Dev build: fall back to ../bin/update.sh (project source tree)
+    QString appDir = QCoreApplication::applicationDirPath();
+    QString scriptPath = appDir + QStringLiteral("/update.sh");
+    if (!QFile::exists(scriptPath))
+        scriptPath = appDir + QStringLiteral("/../bin/update.sh");
     m_updateProcess->start(QStringLiteral("bash"), {scriptPath});
 
     if (!m_updateProcess->waitForStarted(5000)) {
