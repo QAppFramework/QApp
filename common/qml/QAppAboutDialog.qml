@@ -44,7 +44,7 @@ Dialog {
         }
 
         Label {
-            text: "<a href=\"https://northheim.com/\">Northheim</a>"
+            text: "<a href=\"https://mathiason.engineer/\">mathiason.engineer</a>"
             font.pixelSize: 12
             Layout.alignment: Qt.AlignHCenter
             onLinkActivated: Qt.openUrlExternally(link)

@@ -22,12 +22,21 @@ qt_add_library(qapp-common STATIC
 
 set_source_files_properties(common/qml/QAppAboutDialog.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/QAppAboutDialog.qml)
+set_source_files_properties(common/qml/QAppDownloadHandler.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/QAppDownloadHandler.qml)
+set_source_files_properties(common/qml/QAppDownloadBar.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/QAppDownloadBar.qml)
+set_source_files_properties(common/qml/QAppResumeOverlay.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/QAppResumeOverlay.qml)
 
 qt_add_qml_module(qapp-common
     URI QApp.Common
     VERSION 1.0
     QML_FILES
         common/qml/QAppAboutDialog.qml
+        common/qml/QAppDownloadHandler.qml
+        common/qml/QAppDownloadBar.qml
+        common/qml/QAppResumeOverlay.qml
 )
 
 target_include_directories(qapp-common PUBLIC ${CMAKE_SOURCE_DIR}/common/cpp)

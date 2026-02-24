@@ -35,6 +35,9 @@ ApplicationWindow {
             notifHandler.show(notification.title, notification.message)
             notification.show()
         }
+        onDownloadRequested: function(download) {
+            downloadHandler.handleDownload(download)
+        }
     }
 
     PwaHelper { id: helper }
@@ -95,7 +98,13 @@ ApplicationWindow {
         onLicenseRequested: Qt.openUrlExternally("https://eupl.eu/1.2/en/")
     }
 
+    QAppDownloadHandler { id: downloadHandler }
     QAppAboutDialog { id: aboutDialog }
+
+    QAppResumeOverlay {
+        anchors.fill: parent
+        windowActive: root.active
+    }
 
     PwaSplashScreen {
         id: splashScreen; anchors.fill: parent
@@ -152,6 +161,14 @@ ApplicationWindow {
             if (request.toggleOn) { root.showFullScreen(); fullscreenHint.show() }
             else { root.showNormal() }
         }
+    }
+
+    footer: QAppDownloadBar {
+        downloading: downloadHandler.downloading
+        fileName: downloadHandler.fileName
+        receivedBytes: downloadHandler.receivedBytes
+        totalBytes: downloadHandler.totalBytes
+        onCancelRequested: downloadHandler.cancelDownload()
     }
 
     Shortcut { sequence: "F10"; onActivated: pwaMenu.popup() }

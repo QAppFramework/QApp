@@ -54,6 +54,9 @@ ApplicationWindow {
         persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
         httpCacheType: WebEngineProfile.DiskHttpCache
         httpCacheMaximumSize: profileSettings.cacheSizeMB * 1048576
+        onDownloadRequested: function(download) {
+            downloadHandler.handleDownload(download)
+        }
     }
 
     WrapperHelper {
@@ -157,6 +160,10 @@ ApplicationWindow {
         tabSettings: tabSettings
     }
 
+    QAppDownloadHandler {
+        id: downloadHandler
+    }
+
     QAppAboutDialog { id: aboutDialog }
 
     WrapperSettingsDialog {
@@ -184,6 +191,11 @@ ApplicationWindow {
         }
     }
 
+    QAppResumeOverlay {
+        anchors.fill: parent
+        windowActive: root.active
+    }
+
     WrapperFullscreenHint {
         id: fullscreenHint
         anchors.centerIn: parent
@@ -195,17 +207,31 @@ ApplicationWindow {
             fullscreenHint.show()
     }
 
-    footer: ToolBar {
-        height: helper.statusMessage.length > 0 ? implicitHeight : 0
-        visible: helper.statusMessage.length > 0
+    footer: ColumnLayout {
+        spacing: 0
 
-        Label {
-            anchors.fill: parent
-            anchors.leftMargin: 12
-            text: helper.statusMessage
-            font.pixelSize: 11
-            opacity: 0.7
-            verticalAlignment: Text.AlignVCenter
+        QAppDownloadBar {
+            Layout.fillWidth: true
+            downloading: downloadHandler.downloading
+            fileName: downloadHandler.fileName
+            receivedBytes: downloadHandler.receivedBytes
+            totalBytes: downloadHandler.totalBytes
+            onCancelRequested: downloadHandler.cancelDownload()
+        }
+
+        ToolBar {
+            Layout.fillWidth: true
+            height: helper.statusMessage.length > 0 ? implicitHeight : 0
+            visible: helper.statusMessage.length > 0
+
+            Label {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                text: helper.statusMessage
+                font.pixelSize: 11
+                opacity: 0.7
+                verticalAlignment: Text.AlignVCenter
+            }
         }
     }
 }
