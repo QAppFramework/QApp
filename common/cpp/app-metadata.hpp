@@ -32,6 +32,9 @@ struct AppMetadataData {
     QJsonArray shortcuts;          // array of {name, url, description?}
     QStringList mimeTypes;         // from file_handlers
     QJsonArray protocolHandlers;   // [{protocol, url}]
+
+    // QApp version that installed/last updated this app
+    QString qappVersion;
 };
 
 /// App metadata builder and validator.

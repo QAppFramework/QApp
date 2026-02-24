@@ -95,9 +95,9 @@ target_include_directories(qapp-installer PRIVATE ${CMAKE_SOURCE_DIR}/installer/
 
 option(QAPP_DEV_BUILD "Mark as development build" OFF)
 if(QAPP_DEV_BUILD)
-    target_compile_definitions(qapp-installer PRIVATE QAPP_APP_NAME="QApp Dev" QAPP_APP_ID="qapp-installer-dev")
+    target_compile_definitions(qapp-installer PRIVATE QAPP_APP_NAME="QApp Dev" QAPP_APP_ID="qapp-installer-dev" QAPP_VERSION="${PROJECT_VERSION}")
 else()
-    target_compile_definitions(qapp-installer PRIVATE QAPP_APP_NAME="QApp" QAPP_APP_ID="qapp-installer")
+    target_compile_definitions(qapp-installer PRIVATE QAPP_APP_NAME="QApp" QAPP_APP_ID="qapp-installer" QAPP_VERSION="${PROJECT_VERSION}")
 endif()
 
 target_link_libraries(qapp-installer PRIVATE

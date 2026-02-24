@@ -16,16 +16,66 @@ ColumnLayout {
         return false
     }
 
+    function hasAnyUpdate() {
+        for (var i = 0; i < manageTab.appInstaller.appUpdates.length; i++) {
+            if (manageTab.appInstaller.appUpdates[i].hasUpdate)
+                return true
+        }
+        return false
+    }
+
+    property int _updateAllIndex: -1
+
+    function updateAll() {
+        _updateAllIndex = 0
+        _updateNext()
+    }
+
+    function _updateNext() {
+        if (_updateAllIndex < 0) return
+        while (_updateAllIndex < manageTab.appInstaller.installedApps.length) {
+            var app = manageTab.appInstaller.installedApps[_updateAllIndex]
+            if (manageTab.hasAppUpdate(app.appId)) {
+                manageTab.appInstaller.install(app.url, "", app.appId)
+                return
+            }
+            _updateAllIndex++
+        }
+        _updateAllIndex = -1
+    }
+
+    Connections {
+        target: manageTab.appInstaller
+        function onResultChanged() {
+            if (manageTab._updateAllIndex >= 0 && !manageTab.appInstaller.busy) {
+                manageTab._updateAllIndex++
+                manageTab._updateNext()
+            }
+        }
+    }
+
     Layout.margins: 20
     spacing: 16
 
-    Label {
-        text: manageTab.appInstaller.installedApps.length === 0 && !manageTab.appInstaller.busy
-            ? "No apps installed"
-            : manageTab.appInstaller.installedApps.length + " installed app" + (manageTab.appInstaller.installedApps.length !== 1 ? "s" : "")
-        font.pixelSize: 14
+    RowLayout {
         Layout.alignment: Qt.AlignHCenter
-        opacity: 0.7
+        spacing: 12
+
+        Label {
+            text: manageTab.appInstaller.installedApps.length === 0 && !manageTab.appInstaller.busy
+                ? "No apps installed"
+                : manageTab.appInstaller.installedApps.length + " installed app" + (manageTab.appInstaller.installedApps.length !== 1 ? "s" : "")
+            font.pixelSize: 14
+            opacity: 0.7
+        }
+
+        Button {
+            text: "Update All"
+            font.pixelSize: 12
+            visible: manageTab.hasAnyUpdate() && !manageTab.appInstaller.checkingUpdates
+            enabled: !manageTab.appInstaller.busy
+            onClicked: manageTab.updateAll()
+        }
     }
 
     ListView {

@@ -104,6 +104,7 @@ Result<AppMetadataData> AppMetadata::validate(const QJsonObject &obj)
     }
     if (obj.contains(QStringLiteral("protocolHandlers")) && obj[QStringLiteral("protocolHandlers")].isArray())
         data.protocolHandlers = obj[QStringLiteral("protocolHandlers")].toArray();
+    data.qappVersion = obj.value(QStringLiteral("qappVersion")).toString();
 
     return validateFields(data);
 }
@@ -154,6 +155,9 @@ QJsonObject AppMetadata::toJson(const AppMetadataData &data)
     }
     if (!data.protocolHandlers.isEmpty()) {
         obj[QStringLiteral("protocolHandlers")] = data.protocolHandlers;
+    }
+    if (!data.qappVersion.isEmpty()) {
+        obj[QStringLiteral("qappVersion")] = data.qappVersion;
     }
 
     return obj;

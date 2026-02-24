@@ -286,6 +286,7 @@ void AppInstaller::finishInstall()
     metaInput.iconPath = m_installPaths.iconFile;
     metaInput.desktopPath = m_installPaths.desktopFile;
     metaInput.wrapperPath = m_wrapperPath;
+    metaInput.qappVersion = QStringLiteral(QAPP_VERSION);
 
     // Optional fields — skip default "browser" for displayMode
     if (!m_installResult.displayMode.isEmpty() &&
@@ -558,10 +559,7 @@ void AppInstaller::checkUpdates()
                 if (!readResult.success) continue;
                 auto validated = qapp::AppMetadata::validate(readResult.data);
                 if (!validated.success) continue;
-                if (validated.data.level == QStringLiteral("WAPP") ||
-                    validated.data.level == QStringLiteral("PWAPP")) {
-                    m_updateQueue.append(validated.data);
-                }
+                m_updateQueue.append(validated.data);
             }
         }
     }
@@ -582,14 +580,36 @@ void AppInstaller::processNextUpdate()
     int idx = m_updateQueueIndex;
     const auto &app = m_updateQueue[idx];
 
+    // Version comparison applies to ALL app types
+    QStringList versionChanges;
+    if (app.qappVersion != QStringLiteral(QAPP_VERSION))
+        versionChanges << QStringLiteral("qappVersion");
+
+    // WS apps: no manifest to compare, only version check
+    if (app.level == QStringLiteral("WS")) {
+        QJsonObject entry;
+        entry[QStringLiteral("appId")] = app.appId;
+        entry[QStringLiteral("name")] = app.name;
+        entry[QStringLiteral("hasUpdate")] = !versionChanges.isEmpty();
+        QJsonArray changesArr;
+        for (const QString &c : versionChanges) changesArr.append(c);
+        entry[QStringLiteral("changes")] = changesArr;
+
+        m_updateResults.append(entry);
+        m_updateQueueIndex = idx + 1;
+        processNextUpdate();
+        return;
+    }
+
+    // WAPP/PWAPP: also run ClassifyPipeline for manifest changes
     auto *pipeline = new ClassifyPipeline(this);
 
     connect(pipeline, &ClassifyPipeline::finished,
-            this, [this, pipeline, idx](const ClassifyResult &result) {
+            this, [this, pipeline, idx, versionChanges](const ClassifyResult &result) {
         pipeline->deleteLater();
         const auto &app = m_updateQueue[idx];
 
-        QStringList changes;
+        QStringList changes = versionChanges;
 
         // Name
         if (!result.name.isEmpty() && result.name != app.name)
@@ -629,15 +649,18 @@ void AppInstaller::processNextUpdate()
     });
 
     connect(pipeline, &ClassifyPipeline::failed,
-            this, [this, pipeline, idx](const QString &error) {
+            this, [this, pipeline, idx, versionChanges](const QString &error) {
         pipeline->deleteLater();
         const auto &app = m_updateQueue[idx];
 
+        // Pipeline failed but version change still counts
         QJsonObject entry;
         entry[QStringLiteral("appId")] = app.appId;
         entry[QStringLiteral("name")] = app.name;
-        entry[QStringLiteral("hasUpdate")] = false;
-        entry[QStringLiteral("changes")] = QJsonArray();
+        entry[QStringLiteral("hasUpdate")] = !versionChanges.isEmpty();
+        QJsonArray changesArr;
+        for (const QString &c : versionChanges) changesArr.append(c);
+        entry[QStringLiteral("changes")] = changesArr;
         entry[QStringLiteral("error")] = error;
 
         m_updateResults.append(entry);
