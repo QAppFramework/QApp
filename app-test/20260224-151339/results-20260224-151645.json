@@ -1,0 +1,1205 @@
+{
+  "timestamp": "20260224T151645Z",
+  "snapshot": "20260224-151339",
+  "summary": {
+    "total": 149,
+    "auto_tested": 8,
+    "pass": 5,
+    "fail": 3,
+    "manual_skip": 141
+  },
+  "results": {
+    "INS-CLASSIFY-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "HTML title extraction",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLASSIFY-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Manifest name takes priority",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLASSIFY-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Service worker detection via probing",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLASSIFY-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Icon fallback chain",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLASSIFY-05": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Redirect handling",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLASSIFY-06": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "WebEngine fallback on HTTP error",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLASSIFY-07": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Manifest extensions parsed",
+      "category": "classification",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-01": {
+      "status": "pass",
+      "detail": "exit=0, output_len=816",
+      "feature": "Classify URL via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Classify PWA via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Classify WAPP via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-04": {
+      "status": "pass",
+      "detail": "exit=0, output_len=816",
+      "feature": "Classify plain website via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-05": {
+      "status": "fail",
+      "detail": ".desktop missing: /home/lpm/.local/share/applications/qapp-example-com.desktop; metadata missing: /home/lpm/.local/share/qapp-framework/apps/example-com.json; uninstall exit=-1, stderr=TIMEOUT",
+      "feature": "Install app via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-06": {
+      "status": "pass",
+      "detail": "covered by INS-CLI-05 cycle",
+      "feature": "Uninstall app via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-07": {
+      "status": "fail",
+      "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT; stdout is not valid JSON: ",
+      "feature": "List installed apps via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-08": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Check updates via CLI",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-09": {
+      "status": "pass",
+      "detail": "exit=0, output_len=25",
+      "feature": "Version flag",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-CLI-10": {
+      "status": "pass",
+      "detail": "exit=0, output_len=536",
+      "feature": "Help flag",
+      "category": "cli",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "GUI mode launches without arguments",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "URL input validation",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Classify from GUI",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Level badge colors",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-05": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Custom icon selection",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-06": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Install from GUI",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-07": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Reinstall detection",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-08": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Manage tab lists apps",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-09": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Launch app from Manage tab",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-10": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Remove app from Manage tab",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-11": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Update check in Manage tab",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-12": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Self-update (Update QApp)",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-13": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "About dialog",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-14": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "License link",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-GUI-15": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "F10 opens menu",
+      "category": "gui",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-01": {
+      "status": "fail",
+      "detail": "classify exit=1",
+      "feature": "App ID generation from URL",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": ".desktop file content",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "PWAPP routes to pwa-app binary",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "WS/WAPP routes to ws-wrapper binary",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-05": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Manifest shortcuts become .desktop Actions",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-06": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Metadata JSON written",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-07": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Remote icon download",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "INS-INSTALL-08": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Data URI icon save",
+      "category": "install",
+      "binary": "qapp-installer",
+      "source": "qapp-installer-capability.json"
+    },
+    "PWA-BADGE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "navigator.setAppBadge(count)",
+      "category": "badging",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-BADGE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "navigator.clearAppBadge()",
+      "category": "badging",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-BADGE-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Badge visible on KDE/GNOME taskbar",
+      "category": "badging",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-DEV-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Remote debugging in dev build",
+      "category": "dev",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-DISPLAY-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Standalone mode — hamburger menu only",
+      "category": "display-mode",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-DISPLAY-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Minimal-UI mode — toolbar with navigation",
+      "category": "display-mode",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-DISPLAY-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Fullscreen mode — no chrome",
+      "category": "display-mode",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-DISPLAY-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "display_override takes priority",
+      "category": "display-mode",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-DOWNLOAD-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "File download handling",
+      "category": "download",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-FULLSCREEN-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Web-requested fullscreen",
+      "category": "fullscreen",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-FULLSCREEN-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "F11 toggles fullscreen",
+      "category": "fullscreen",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-FULLSCREEN-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Escape exits fullscreen",
+      "category": "fullscreen",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-FULLSCREEN-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Fullscreen hint (one-time per appId)",
+      "category": "fullscreen",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-JSHEAP-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Configurable JS heap size",
+      "category": "performance",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-LAUNCH-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Launch with appId and URL",
+      "category": "launch",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-LAUNCH-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Uses startUrl from metadata over argv",
+      "category": "launch",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-LAUNCH-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Window icon from metadata",
+      "category": "launch",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-LIFECYCLE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Resume overlay and reactivation",
+      "category": "lifecycle",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-LIFECYCLE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "No false resume on quick switch",
+      "category": "lifecycle",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-MENU-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "App menu items",
+      "category": "menu",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-MENU-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Back/Forward disabled when no history",
+      "category": "menu",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-MENU-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Open in browser",
+      "category": "menu",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-NOTIFY-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Web push notifications → desktop",
+      "category": "notifications",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-NOTIFY-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Push service enabled",
+      "category": "notifications",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-OFFLINE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Online/offline detection",
+      "category": "offline",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-OFFLINE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Offline indicator disappears on reconnect",
+      "category": "offline",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-OFFLINE-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Service worker provides offline content",
+      "category": "offline",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-PERM-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Auto-grant permissions for installed PWA",
+      "category": "permissions",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-PERM-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Permission decisions persist",
+      "category": "permissions",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-PERM-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "All 9 permission types handled",
+      "category": "permissions",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-POLYFILL-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Polyfills injected on page load",
+      "category": "polyfills",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-POLYFILL-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Polyfills survive navigation",
+      "category": "polyfills",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-PROFILE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Persistent cookies",
+      "category": "profile",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-PROFILE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Disk HTTP cache",
+      "category": "profile",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-PROFILE-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Per-app isolated storage",
+      "category": "profile",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SCOPE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "In-scope navigation stays in app",
+      "category": "scope",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SCOPE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Out-of-scope opens system browser",
+      "category": "scope",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SHARE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "navigator.share({title, text, url})",
+      "category": "share",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SHARE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "navigator.canShare()",
+      "category": "share",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SPLASH-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Splash screen shows during load",
+      "category": "splash",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SPLASH-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Splash dismisses on page load",
+      "category": "splash",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-SPLASH-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Splash text color adapts to background",
+      "category": "splash",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-THEME-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Theme color on toolbar",
+      "category": "theme",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-THEME-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Theme color auto text contrast",
+      "category": "theme",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-UA-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "QtWebEngine removed from user agent",
+      "category": "user-agent",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-WINDOW-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Window geometry persists",
+      "category": "window",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-ZOOM-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Zoom in/out/reset",
+      "category": "zoom",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "PWA-ZOOM-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Reset Zoom disabled at 1.0",
+      "category": "zoom",
+      "binary": "qapp-pwa-app",
+      "source": "qapp-pwa-capability.json"
+    },
+    "WA-DISPLAY-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Standalone mode — no tabs, no save-as-app",
+      "category": "display-mode",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-DISPLAY-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Minimal-UI mode — back/forward buttons",
+      "category": "display-mode",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-DISPLAY-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Fullscreen mode — no header",
+      "category": "display-mode",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-DISPLAY-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Browser mode fallback",
+      "category": "display-mode",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-DOWNLOAD-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Download handler works in WAPP",
+      "category": "download",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-LIFECYCLE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Resume overlay",
+      "category": "lifecycle",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-META-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Loads metadata from JSON",
+      "category": "metadata",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-META-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Uses startUrl from manifest",
+      "category": "metadata",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-PROFILE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Persistent cookies",
+      "category": "profile",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-PROFILE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Per-app isolated storage",
+      "category": "profile",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-SAVE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Save-as-app hidden in standalone mode",
+      "category": "save-as-app",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-SCOPE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "In-scope navigation stays in app",
+      "category": "scope",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-SCOPE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Out-of-scope navigation opens browser",
+      "category": "scope",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-SCOPE-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Scope checks origin + path prefix",
+      "category": "scope",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-SCOPE-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "No scope = no restriction",
+      "category": "scope",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-SETTINGS-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Settings dialog available",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-TABS-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "No tabs in standalone/minimal-ui mode",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-THEME-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Theme color applied to header",
+      "category": "theme",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-THEME-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Dark theme detection",
+      "category": "theme",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-THEME-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Light theme detection",
+      "category": "theme",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-WINDOW-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Window icon from metadata",
+      "category": "window",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WA-WINDOW-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Window geometry persists per appId",
+      "category": "window",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-wa-capability.json"
+    },
+    "WS-ABOUT-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "About dialog",
+      "category": "about",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-ABOUT-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "License link",
+      "category": "about",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-DOWNLOAD-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "File download with save dialog",
+      "category": "download",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-DOWNLOAD-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Cancel download",
+      "category": "download",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-HEADER-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Tab bar visible in browser mode",
+      "category": "header",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-HEADER-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "No back/forward buttons in browser mode",
+      "category": "header",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-LAUNCH-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Launch with appId and URL",
+      "category": "launch",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-LAUNCH-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Window icon from metadata",
+      "category": "launch",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-LAUNCH-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Per-app QSettings isolation",
+      "category": "launch",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-LIFECYCLE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Resume overlay on window reactivation",
+      "category": "lifecycle",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-NAV-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "No scope enforcement for WS",
+      "category": "navigation",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-NAV-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Context menu — Back/Forward/Reload",
+      "category": "navigation",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-NAV-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Context menu — Open link in new tab",
+      "category": "navigation",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-NAV-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Context menu — Copy link address",
+      "category": "navigation",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-NAV-05": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Context menu — Copy image",
+      "category": "navigation",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-NAV-06": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Context menu — Copy text",
+      "category": "navigation",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-PROFILE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Persistent cookies",
+      "category": "profile",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-PROFILE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Disk HTTP cache",
+      "category": "profile",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-PROFILE-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Per-app isolated storage",
+      "category": "profile",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SAVE-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Save as app menu item",
+      "category": "save-as-app",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SAVE-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Save dialog shows page info",
+      "category": "save-as-app",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SAVE-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Save launches installer",
+      "category": "save-as-app",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SETTINGS-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Settings dialog opens",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SETTINGS-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "HTTP cache size control",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SETTINGS-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "JS heap size control",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SETTINGS-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "User agent presets",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SETTINGS-05": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Custom user agent",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-SETTINGS-06": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Clear data and restart",
+      "category": "settings",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Initial tab loads URL",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "New tab via + button",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Close tab via X button",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Tab switching",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-05": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Tab title updates",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-06": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Tabs persist across sessions",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-TAB-07": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "window.open() opens new tab",
+      "category": "tabs",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-WINDOW-01": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Window geometry persists",
+      "category": "window",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-WINDOW-02": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "F11 toggles fullscreen",
+      "category": "window",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-WINDOW-03": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "Fullscreen hint (one-time)",
+      "category": "window",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    },
+    "WS-WINDOW-04": {
+      "status": "manual",
+      "detail": "requires manual verification",
+      "feature": "F10 opens menu",
+      "category": "window",
+      "binary": "qapp-ws-wrapper",
+      "source": "qapp-ws-capability.json"
+    }
+  }
+}

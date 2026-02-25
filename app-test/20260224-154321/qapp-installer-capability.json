@@ -1,0 +1,483 @@
+{
+  "binary": "qapp-installer",
+  "description": "System app that classifies URLs, installs/manages web apps, generates .desktop entries",
+  "tested_against": "cmake -B build -DQAPP_DEV_BUILD=ON && cmake --build build",
+  "capabilities": [
+    {
+      "id": "INS-CLI-01",
+      "category": "cli",
+      "feature": "Classify URL via CLI",
+      "test": "./qapp-installer --classify https://example.com",
+      "expected": "JSON output with classification.level, metadata.name, metadata.iconUrl, finalUrl. Exit 0."
+    },
+    {
+      "id": "INS-CLI-02",
+      "category": "cli",
+      "feature": "Classify PWA via CLI",
+      "test": "./qapp-installer --classify https://app.diagrams.net",
+      "expected": "level=PWAPP, hasManifest=true, hasServiceWorker=true, name from manifest, icon URL from manifest."
+    },
+    {
+      "id": "INS-CLI-03",
+      "category": "cli",
+      "feature": "Classify WAPP via CLI",
+      "test": "./qapp-installer --classify <site-with-manifest-no-sw>",
+      "expected": "level=WAPP, hasManifest=true, hasServiceWorker=false."
+    },
+    {
+      "id": "INS-CLI-04",
+      "category": "cli",
+      "feature": "Classify plain website via CLI",
+      "test": "./qapp-installer --classify https://example.com",
+      "expected": "level=WS, hasManifest=false, hasServiceWorker=false, name from <title>."
+    },
+    {
+      "id": "INS-CLI-05",
+      "category": "cli",
+      "feature": "Install app via CLI",
+      "test": "./qapp-installer --install https://example.com",
+      "expected": "JSON with appId, name, desktopPath. Files created: ~/.local/share/applications/qapp-example-com.desktop, ~/.local/share/qapp-framework/apps/example-com.json, ~/.local/share/qapp-framework/icons/example-com.png. Exit 0."
+    },
+    {
+      "id": "INS-CLI-06",
+      "category": "cli",
+      "feature": "Uninstall app via CLI",
+      "test": "./qapp-installer --uninstall example-com",
+      "expected": "JSON with uninstalled field. All 3 files removed (.desktop, .json, icon). Exit 0."
+    },
+    {
+      "id": "INS-CLI-07",
+      "category": "cli",
+      "feature": "List installed apps via CLI",
+      "test": "./qapp-installer --list",
+      "expected": "JSON array sorted by name. Each entry has appId, name, level, url. Exit 0."
+    },
+    {
+      "id": "INS-CLI-08",
+      "category": "cli",
+      "feature": "Check updates via CLI",
+      "test": "./qapp-installer --check-updates",
+      "expected": "JSON array with appId, name, hasUpdate, changes[] for each WAPP/PWAPP app. Exit 0."
+    },
+    {
+      "id": "INS-CLI-09",
+      "category": "cli",
+      "feature": "Version flag",
+      "test": "./qapp-installer --version",
+      "expected": "Prints version string (e.g. '0.1.0'). Exit 0."
+    },
+    {
+      "id": "INS-CLI-10",
+      "category": "cli",
+      "feature": "Help flag",
+      "test": "./qapp-installer --help",
+      "expected": "Prints usage with all available flags (--classify, --install, --uninstall, --list, --check-updates, --version, --help). Exit 0."
+    },
+    {
+      "id": "INS-CLI-11",
+      "category": "cli",
+      "feature": "No arguments launches GUI",
+      "test": "./qapp-installer (no flags)",
+      "expected": "Auto-detects no --flag present, launches GUI mode (not CLI)."
+    },
+    {
+      "id": "INS-GUI-01",
+      "category": "gui",
+      "feature": "GUI window opens at 640x480",
+      "test": "./qapp-installer (no flags)",
+      "expected": "ApplicationWindow 640x480 with Install and Manage tabs, header with logo and menu."
+    },
+    {
+      "id": "INS-GUI-02",
+      "category": "gui",
+      "feature": "URL input validation",
+      "test": "Type invalid URL in input field",
+      "expected": "Classify button disabled for invalid URLs, enabled for valid HTTP/HTTPS URLs."
+    },
+    {
+      "id": "INS-GUI-03",
+      "category": "gui",
+      "feature": "Classify from GUI",
+      "test": "Enter https://example.com and click Classify",
+      "expected": "BusyIndicator shows, status messages update (Fetching page... Parsing...), results panel shows level badge, name, icon preview, metadata grid."
+    },
+    {
+      "id": "INS-GUI-04",
+      "category": "gui",
+      "feature": "Level badge colors",
+      "test": "Classify WS, WAPP, PWAPP sites",
+      "expected": "WS=gray badge, WAPP=blue badge, PWAPP=green badge. Badge is 48x24 with rounded corners."
+    },
+    {
+      "id": "INS-GUI-05",
+      "category": "gui",
+      "feature": "Custom icon selection",
+      "test": "After classify, click 'Choose icon...' and select PNG file",
+      "expected": "FileDialog opens with filter 'Image files (*.png *.svg *.ico)'. Selected icon shows in 64x64 preview."
+    },
+    {
+      "id": "INS-GUI-06",
+      "category": "gui",
+      "feature": "Install from GUI",
+      "test": "Classify URL, then click Install",
+      "expected": "BusyIndicator, then success message. .desktop file, metadata JSON, icon file created. App appears in Manage tab."
+    },
+    {
+      "id": "INS-GUI-07",
+      "category": "gui",
+      "feature": "Reinstall detection",
+      "test": "Classify URL that is already installed",
+      "expected": "Button text changes to 'Reinstall'. Remove button visible."
+    },
+    {
+      "id": "INS-GUI-08",
+      "category": "gui",
+      "feature": "Manage tab lists apps",
+      "test": "Switch to Manage tab",
+      "expected": "Shows 'N installed apps' counter. ListView with each app: level badge, name, URL. Alternating row backgrounds."
+    },
+    {
+      "id": "INS-GUI-09",
+      "category": "gui",
+      "feature": "Launch app from Manage tab",
+      "test": "Click 'Open' on installed app",
+      "expected": "Correct binary launches detached: WS/WAPP -> qapp-ws-wrapper, PWAPP -> qapp-pwa-app. Args: appId url."
+    },
+    {
+      "id": "INS-GUI-10",
+      "category": "gui",
+      "feature": "Remove app from Manage tab",
+      "test": "Click 'Remove' on installed app",
+      "expected": "App removed from list. All 3 files deleted (.desktop, metadata, icon)."
+    },
+    {
+      "id": "INS-GUI-11",
+      "category": "gui",
+      "feature": "Update check in Manage tab",
+      "test": "With WAPP/PWAPP apps installed, observe Manage tab",
+      "expected": "'Checking for updates...' status. Apps with changes show orange 'Update' badge and button."
+    },
+    {
+      "id": "INS-GUI-12",
+      "category": "gui",
+      "feature": "Self-update (Update QApp)",
+      "test": "Menu -> Update QApp",
+      "expected": "UpdateDialog shows. Runs update.sh. Live status messages stream. Success or error reported."
+    },
+    {
+      "id": "INS-GUI-13",
+      "category": "gui",
+      "feature": "About dialog",
+      "test": "Menu -> About QApp",
+      "expected": "QAppAboutDialog shows with version, tagline, links."
+    },
+    {
+      "id": "INS-GUI-14",
+      "category": "gui",
+      "feature": "License link",
+      "test": "Menu -> License (EUPL v1.2)",
+      "expected": "Opens https://eupl.eu/1.2/en/ in system browser."
+    },
+    {
+      "id": "INS-GUI-15",
+      "category": "gui",
+      "feature": "F10 opens menu",
+      "test": "Press F10 in installer window",
+      "expected": "Hamburger menu opens."
+    },
+    {
+      "id": "INS-GUI-16",
+      "category": "gui",
+      "feature": "Enter key triggers classify",
+      "test": "Type valid URL in input field, press Enter",
+      "expected": "Classify starts without clicking button (onAccepted triggers classify)."
+    },
+    {
+      "id": "INS-GUI-17",
+      "category": "gui",
+      "feature": "Window geometry persistence",
+      "test": "Resize/move window. Close. Relaunch.",
+      "expected": "Window opens at saved x, y, width, height. Stored in QSettings category 'window'."
+    },
+    {
+      "id": "INS-GUI-18",
+      "category": "gui",
+      "feature": "Dynamic window title per build mode",
+      "test": "Build with QAPP_DEV_BUILD=ON vs release",
+      "expected": "Dev: title='QApp Dev'. Release: title='QApp'."
+    },
+    {
+      "id": "INS-GUI-19",
+      "category": "gui",
+      "feature": "Custom icon filename shown in results",
+      "test": "Choose custom icon file",
+      "expected": "Filename (not full path) displayed below icon preview, elided if long."
+    },
+    {
+      "id": "INS-GUI-20",
+      "category": "gui",
+      "feature": "Metadata grid in results panel",
+      "test": "Classify WAPP with manifest",
+      "expected": "Grid shows: display mode, theme color (with colored swatch), start URL, 'Manifest: Yes', 'Service worker: Yes/No'."
+    },
+    {
+      "id": "INS-GUI-21",
+      "category": "gui",
+      "feature": "Theme color swatch in results",
+      "test": "Classify site with theme-color meta tag (e.g. #2196f3)",
+      "expected": "14x14 colored rectangle with border + hex text displayed in metadata grid."
+    },
+    {
+      "id": "INS-GUI-22",
+      "category": "gui",
+      "feature": "Footer status messages",
+      "test": "Observe footer during classify and install operations",
+      "expected": "Footer shows dynamic status: 'Fetching page...', 'Parsing...', 'Installing...', 'Classification complete', etc."
+    },
+    {
+      "id": "INS-GUI-23",
+      "category": "gui",
+      "feature": "Tab switch triggers list + update check",
+      "test": "Switch to Manage tab",
+      "expected": "listApps() and checkUpdates() called automatically on tab click."
+    },
+    {
+      "id": "INS-GUI-24",
+      "category": "gui",
+      "feature": "Update All button",
+      "test": "With 2+ apps having updates, check Manage tab",
+      "expected": "'Update All' button visible when hasAnyUpdate(). Clicks update each app sequentially."
+    },
+    {
+      "id": "INS-GUI-25",
+      "category": "gui",
+      "feature": "Reset state on new classify",
+      "test": "Install app, then classify different URL",
+      "expected": "'Installed!' message, 'Reinstall'/'Remove' buttons disappear. Fresh results shown."
+    },
+    {
+      "id": "INS-CLASSIFY-01",
+      "category": "classification",
+      "feature": "HTML title extraction",
+      "test": "Classify site with <title>My Site</title>",
+      "expected": "metadata.name = 'My Site' (when no manifest)."
+    },
+    {
+      "id": "INS-CLASSIFY-02",
+      "category": "classification",
+      "feature": "Manifest name takes priority",
+      "test": "Classify WAPP with manifest.name = 'App Name' and <title> = 'Different'",
+      "expected": "metadata.name = 'App Name' (manifest wins over title)."
+    },
+    {
+      "id": "INS-CLASSIFY-03",
+      "category": "classification",
+      "feature": "Service worker detection via probing",
+      "test": "Classify site with /sw.js (no SW hint in HTML)",
+      "expected": "hasServiceWorker=true. Pipeline probes /sw.js, /service-worker.js, /serviceworker.js with HEAD requests."
+    },
+    {
+      "id": "INS-CLASSIFY-04",
+      "category": "classification",
+      "feature": "Icon fallback chain",
+      "test": "Classify site with no manifest icon, no HTML icon, no favicon.ico",
+      "expected": "Generated letter icon (data:image/svg+xml with first letter, hashed color). Chain: manifest -> HTML -> favicon.ico -> apple-touch-icon.png -> og:image -> letter icon."
+    },
+    {
+      "id": "INS-CLASSIFY-05",
+      "category": "classification",
+      "feature": "Redirect handling",
+      "test": "Classify URL that redirects (e.g., http -> https)",
+      "expected": "finalUrl reflects actual URL after all redirects. Classification uses final page."
+    },
+    {
+      "id": "INS-CLASSIFY-06",
+      "category": "classification",
+      "feature": "WebEngine fallback on HTTP error",
+      "test": "Classify site that returns 403/503 to QNetworkAccessManager",
+      "expected": "Falls back to WebFetcher (headless Chromium). Triggered by: 403, 503, 'Failed to fetch', 'not reachable', 'Connection refused', 'timed out'."
+    },
+    {
+      "id": "INS-CLASSIFY-07",
+      "category": "classification",
+      "feature": "Manifest extensions parsed",
+      "test": "Classify PWA with display_override, shortcuts, file_handlers, protocol_handlers in manifest",
+      "expected": "All fields in ClassifyResult: displayOverride[], shortcuts[], mimeTypes[], protocolHandlers[]."
+    },
+    {
+      "id": "INS-CLASSIFY-08",
+      "category": "classification",
+      "feature": "Status messages during classification",
+      "test": "Classify URL, observe statusMessage property",
+      "expected": "Status updates at each step: 'Fetching page...', 'Parsing page...', 'Fetching manifest...', 'Detecting service worker...', 'Classifying...', 'Resolving icon...', 'Complete'."
+    },
+    {
+      "id": "INS-CLASSIFY-09",
+      "category": "classification",
+      "feature": "WebEngine fallback 30s timeout",
+      "test": "Trigger WebEngine fallback on unresponsive URL",
+      "expected": "WebFetcher times out after 30 seconds with 'Page load timed out (30s)' error."
+    },
+    {
+      "id": "INS-CLASSIFY-10",
+      "category": "classification",
+      "feature": "Service worker hint in HTML",
+      "test": "Classify site with navigator.serviceWorker.register() in HTML source",
+      "expected": "swHint=true, skips service worker probing (optimization)."
+    },
+    {
+      "id": "INS-CLASSIFY-11",
+      "category": "classification",
+      "feature": "Favicon content-type validation",
+      "test": "Classify site where /favicon.ico returns text/html (not image)",
+      "expected": "Favicon rejected. Fallback to next icon layer. Only image/* or application/octet-stream accepted."
+    },
+    {
+      "id": "INS-CLASSIFY-12",
+      "category": "classification",
+      "feature": "Manifest icon selection prefers 192x192",
+      "test": "Classify PWA with icons [64x64, 192x192, 512x512]",
+      "expected": "192x192 selected. Without 192: largest used. Without sizes: first icon used."
+    },
+    {
+      "id": "INS-INSTALL-01",
+      "category": "install",
+      "feature": "App ID generation from URL",
+      "test": "Install https://my.example.com:8080",
+      "expected": "appId = 'my-example-com-8080'. Default ports (80/443) omitted. Dots replaced by hyphens, lowercase."
+    },
+    {
+      "id": "INS-INSTALL-02",
+      "category": "install",
+      "feature": ".desktop file content",
+      "test": "Install app, read generated .desktop file",
+      "expected": "Contains: Type=Application, Name, Exec=/path/to/wrapper appId url, Icon, Terminal=false, StartupNotify=true, Categories=Network;WebBrowser;. Ends with newline."
+    },
+    {
+      "id": "INS-INSTALL-03",
+      "category": "install",
+      "feature": "PWAPP routes to pwa-app binary",
+      "test": "Install a PWAPP site",
+      "expected": ".desktop Exec points to qapp-pwa-app. metadata.wrapperPath = pwa-app path."
+    },
+    {
+      "id": "INS-INSTALL-04",
+      "category": "install",
+      "feature": "WS/WAPP routes to ws-wrapper binary",
+      "test": "Install a WS or WAPP site",
+      "expected": ".desktop Exec points to qapp-ws-wrapper. metadata.wrapperPath = ws-wrapper path."
+    },
+    {
+      "id": "INS-INSTALL-05",
+      "category": "install",
+      "feature": "Manifest shortcuts become .desktop Actions",
+      "test": "Install PWAPP with shortcuts[] in manifest",
+      "expected": ".desktop file has [Desktop Action] sections. Action IDs sanitized to alphanumeric only."
+    },
+    {
+      "id": "INS-INSTALL-06",
+      "category": "install",
+      "feature": "Metadata JSON written",
+      "test": "Install app, read ~/.local/share/qapp-framework/apps/{appId}.json",
+      "expected": "Valid JSON with: appId, name, url, level, iconPath, desktopPath, wrapperPath, installedAt (ISO 8601), qappVersion. Optional: displayMode (omitted if 'browser'), themeColor, backgroundColor, startUrl, scope, manifestId, displayOverride[], shortcuts[], mimeTypes[], protocolHandlers[]."
+    },
+    {
+      "id": "INS-INSTALL-07",
+      "category": "install",
+      "feature": "Remote icon download",
+      "test": "Install app with web URL icon",
+      "expected": "Icon downloaded to ~/.local/share/qapp-framework/icons/{appId}.png. On failure: letter icon generated."
+    },
+    {
+      "id": "INS-INSTALL-08",
+      "category": "install",
+      "feature": "Data URI icon save",
+      "test": "Install app with data:image/svg+xml icon",
+      "expected": "SVG icon decoded (base64 or percent-encoding) and saved to icons/ dir."
+    },
+    {
+      "id": "INS-INSTALL-09",
+      "category": "install",
+      "feature": "Icon format detection",
+      "test": "Install apps with PNG, SVG, ICO, WEBP icons",
+      "expected": "Icon saved with correct extension based on content-type or file extension detection."
+    },
+    {
+      "id": "INS-INSTALL-10",
+      "category": "install",
+      "feature": "Letter icon generation with hashed color",
+      "test": "Install site with no available icons",
+      "expected": "192x192 SVG letter icon generated. First letter uppercase, color hue from name hash (consistent across installs)."
+    },
+    {
+      "id": "INS-INSTALL-11",
+      "category": "install",
+      "feature": "File handler MIME types in .desktop",
+      "test": "Install PWA with file_handlers (accept: image/png, application/pdf)",
+      "expected": ".desktop file has MimeType=image/png;application/pdf;. MIME types extracted from all file_handlers."
+    },
+    {
+      "id": "INS-INSTALL-12",
+      "category": "install",
+      "feature": "displayMode omitted if browser",
+      "test": "Install WS app, read metadata JSON",
+      "expected": "displayMode field absent (defaults to browser). Install WAPP with standalone: field present."
+    },
+    {
+      "id": "INS-UPDATE-01",
+      "category": "update",
+      "feature": "QApp version triggers update",
+      "test": "Install app. Update QApp binary. Run check-updates.",
+      "expected": "All installed apps show hasUpdate=true when qappVersion in metadata differs from current binary version."
+    },
+    {
+      "id": "INS-UPDATE-02",
+      "category": "update",
+      "feature": "WS apps only version-checked",
+      "test": "Install WS site. Change site content. Run check-updates.",
+      "expected": "No update detected (WS apps skip manifest re-fetch, only check qappVersion)."
+    },
+    {
+      "id": "INS-UPDATE-03",
+      "category": "update",
+      "feature": "WAPP/PWAPP manifest comparison",
+      "test": "Install WAPP/PWAPP. Modify manifest (name, display, theme, startUrl, scope). Check updates.",
+      "expected": "hasUpdate=true with changes[] listing each changed field."
+    },
+    {
+      "id": "INS-UPDATE-04",
+      "category": "update",
+      "feature": "Update detects version change even if manifest fetch fails",
+      "test": "Install PWAPP. Take site offline. Upgrade QApp. Check updates.",
+      "expected": "hasUpdate=true (version changed). error field populated (fetch failed). Both reported."
+    },
+    {
+      "id": "INS-LAUNCH-01",
+      "category": "launch",
+      "feature": "Launch uses wrapperPath from metadata",
+      "test": "Launch PWAPP from Manage tab",
+      "expected": "Reads wrapperPath from metadata. PWAPP -> qapp-pwa-app process. WS/WAPP -> qapp-ws-wrapper process."
+    },
+    {
+      "id": "INS-LAUNCH-02",
+      "category": "launch",
+      "feature": "Legacy fallback to ws-wrapper",
+      "test": "Launch app with missing wrapperPath in metadata",
+      "expected": "Falls back to qapp-ws-wrapper (backward compatibility with pre-Phase 7 installs)."
+    },
+    {
+      "id": "INS-BUILD-01",
+      "category": "build",
+      "feature": "Dev build disables QML disk cache",
+      "test": "Build with QAPP_DEV_BUILD=ON",
+      "expected": "QML_DISABLE_DISK_CACHE=1 set. QML changes visible without rebuild."
+    },
+    {
+      "id": "INS-BUILD-02",
+      "category": "build",
+      "feature": "Compile-time app identity",
+      "test": "Check QAPP_APP_NAME and QAPP_APP_ID compile definitions",
+      "expected": "Dev: APP_NAME='QApp Dev', APP_ID='qapp-installer-dev'. Release: APP_NAME='QApp', APP_ID='qapp-installer'."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "INS-CLI-05": {
+    "feature": "Install app via CLI",
+    "detail": ".desktop missing: /home/lpm/.local/share/applications/qapp-example-com.desktop; metadata missing: /home/lpm/.local/share/qapp-framework/apps/example-com.json; uninstall exit=-1, stderr=TIMEOUT",
+    "first_seen": "20260224T140222Z",
+    "last_seen": "20260224T140222Z"
+  },
+  "INS-CLI-07": {
+    "feature": "List installed apps via CLI",
+    "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT; stdout is not valid JSON: ",
+    "first_seen": "20260224T140322Z",
+    "last_seen": "20260224T140322Z"
+  },
+  "INS-INSTALL-01": {
+    "feature": "App ID generation from URL",
+    "detail": "classify exit=1",
+    "first_seen": "20260224T140323Z",
+    "last_seen": "20260224T140323Z"
+  }
+}

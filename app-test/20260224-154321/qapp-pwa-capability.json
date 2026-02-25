@@ -1,0 +1,435 @@
+{
+  "binary": "qapp-pwa-app",
+  "mode": "PWAPP (full PWA with manifest + service worker)",
+  "description": "W3C PWA shell — manifest-driven display, permissions, notifications, badging, share, offline, scope navigation",
+  "launch": "./qapp-pwa-app <appId> <url>",
+  "capabilities": [
+    {
+      "id": "PWA-LAUNCH-01",
+      "category": "launch",
+      "feature": "Launch with appId and URL",
+      "test": "./qapp-pwa-app my-pwa https://app.example.com",
+      "expected": "Window opens, loads URL. Splash screen shows during load."
+    },
+    {
+      "id": "PWA-LAUNCH-02",
+      "category": "launch",
+      "feature": "Uses startUrl from metadata over argv",
+      "test": "Install PWAPP with manifest start_url. Launch.",
+      "expected": "Loads metadata startUrl, not argv URL. Metadata takes priority."
+    },
+    {
+      "id": "PWA-LAUNCH-03",
+      "category": "launch",
+      "feature": "Window icon from metadata",
+      "test": "Launch installed PWAPP",
+      "expected": "Window icon loaded from metadata iconPath field."
+    },
+    {
+      "id": "PWA-SPLASH-01",
+      "category": "splash",
+      "feature": "Splash screen shows during load",
+      "test": "Launch PWAPP",
+      "expected": "Full-screen splash with: backgroundColor from manifest, app icon (128x128), app name, BusyIndicator. z:1000."
+    },
+    {
+      "id": "PWA-SPLASH-02",
+      "category": "splash",
+      "feature": "Splash dismisses on page load",
+      "test": "Wait for page to load",
+      "expected": "Splash fades out (400ms animation) when LoadSucceededStatus fires. Also dismisses on LoadFailedStatus."
+    },
+    {
+      "id": "PWA-SPLASH-03",
+      "category": "splash",
+      "feature": "Splash text color adapts to background",
+      "test": "PWAPP with dark backgroundColor vs light backgroundColor",
+      "expected": "White text on dark background, dark text on light. Luminance formula: (0.299*R + 0.587*G + 0.114*B) < 0.5."
+    },
+    {
+      "id": "PWA-DISPLAY-01",
+      "category": "display-mode",
+      "feature": "Standalone mode — hamburger menu only",
+      "test": "Install PWAPP with display:standalone. Launch.",
+      "expected": "No URL bar. No navigation buttons. Only hamburger menu button in header."
+    },
+    {
+      "id": "PWA-DISPLAY-02",
+      "category": "display-mode",
+      "feature": "Minimal-UI mode — toolbar with navigation",
+      "test": "Install PWAPP with display:minimal-ui. Launch.",
+      "expected": "PwaToolbar with: back/forward/reload buttons, read-only URL bar, hamburger menu."
+    },
+    {
+      "id": "PWA-DISPLAY-03",
+      "category": "display-mode",
+      "feature": "Fullscreen mode — no chrome",
+      "test": "Install PWAPP with display:fullscreen. Launch.",
+      "expected": "Window starts fullscreen automatically. No header at all. showFullScreen() called."
+    },
+    {
+      "id": "PWA-DISPLAY-04",
+      "category": "display-mode",
+      "feature": "display_override takes priority",
+      "test": "Install PWAPP with display_override:[minimal-ui, standalone] and display:standalone",
+      "expected": "Uses minimal-ui (first supported mode in display_override wins over display field)."
+    },
+    {
+      "id": "PWA-DISPLAY-05",
+      "category": "display-mode",
+      "feature": "Default display mode is standalone",
+      "test": "Install PWAPP with no displayMode and no displayOverride fields in metadata",
+      "expected": "Defaults to standalone mode (not browser)."
+    },
+    {
+      "id": "PWA-THEME-01",
+      "category": "theme",
+      "feature": "Theme color on toolbar",
+      "test": "Install PWAPP with theme_color:#e91e63 and display:minimal-ui. Launch.",
+      "expected": "PwaToolbar background is #e91e63. Text white (dark background)."
+    },
+    {
+      "id": "PWA-THEME-02",
+      "category": "theme",
+      "feature": "Theme color auto text contrast",
+      "test": "PWAPP with light theme_color (#f0f0f0)",
+      "expected": "Toolbar text is dark. Luminance formula: (0.299*R + 0.587*G + 0.114*B) >= 0.5."
+    },
+    {
+      "id": "PWA-SCOPE-01",
+      "category": "scope",
+      "feature": "In-scope navigation stays in app",
+      "test": "Click link within manifest scope",
+      "expected": "Navigation accepted. Page loads in WebEngineView."
+    },
+    {
+      "id": "PWA-SCOPE-02",
+      "category": "scope",
+      "feature": "Out-of-scope opens system browser",
+      "test": "Click link outside manifest scope",
+      "expected": "Navigation rejected. Qt.openUrlExternally() opens system browser."
+    },
+    {
+      "id": "PWA-SCOPE-03",
+      "category": "scope",
+      "feature": "Relative scope resolved against base URL",
+      "test": "PWAPP with relative scope '/app/' and url 'https://example.com'",
+      "expected": "Scope resolves to 'https://example.com/app/' via QUrl::resolved()."
+    },
+    {
+      "id": "PWA-SCOPE-04",
+      "category": "scope",
+      "feature": "Only link clicks scope-checked",
+      "test": "Programmatic navigation (window.location.href) to out-of-scope URL",
+      "expected": "Navigation accepted (only LinkClickedNavigation type is scope-filtered)."
+    },
+    {
+      "id": "PWA-PERM-01",
+      "category": "permissions",
+      "feature": "Auto-grant permissions for installed PWA",
+      "test": "Web page requests geolocation, camera, notifications",
+      "expected": "Permission auto-granted without user prompt (default=true for installed PWAs)."
+    },
+    {
+      "id": "PWA-PERM-02",
+      "category": "permissions",
+      "feature": "Permission decisions persist",
+      "test": "Grant permission. Close app. Relaunch. Request same permission.",
+      "expected": "Still granted. Stored in QSettings permissions/{type}."
+    },
+    {
+      "id": "PWA-PERM-03",
+      "category": "permissions",
+      "feature": "All 9 permission types handled",
+      "test": "Request each: Geolocation, AudioCapture, VideoCapture, AudioVideoCapture, DesktopVideoCapture, DesktopAudioVideoCapture, Notifications, ClipboardReadWrite, LocalFontsAccess",
+      "expected": "All handled by PwaPermissionHandler. Each auto-granted by default."
+    },
+    {
+      "id": "PWA-PERM-04",
+      "category": "permissions",
+      "feature": "Fresh install defaults to grant-all",
+      "test": "Fresh PWAPP install, request permission with no prior QSettings entry",
+      "expected": "shouldGrant() returns true. No QSettings key needed for default behavior."
+    },
+    {
+      "id": "PWA-NOTIFY-01",
+      "category": "notifications",
+      "feature": "Web push notifications to desktop",
+      "test": "PWA sends notification via Notification API",
+      "expected": "Desktop notification via D-Bus org.freedesktop.Notifications.Notify(). Shows app name + icon + title + body. expire_timeout=-1."
+    },
+    {
+      "id": "PWA-NOTIFY-02",
+      "category": "notifications",
+      "feature": "Push service enabled (version-safe)",
+      "test": "PWA subscribes to push notifications",
+      "expected": "WebEngineProfile.pushServiceEnabled=true if Qt supports it. Runtime check: 'pushServiceEnabled' in appProfile."
+    },
+    {
+      "id": "PWA-BADGE-01",
+      "category": "badging",
+      "feature": "navigator.setAppBadge(count)",
+      "test": "PWA calls navigator.setAppBadge(5)",
+      "expected": "JS polyfill emits console.info('__QAPP_CMD:badge:5'). D-Bus Unity LauncherEntry signal with count=5, count-visible=true."
+    },
+    {
+      "id": "PWA-BADGE-02",
+      "category": "badging",
+      "feature": "navigator.clearAppBadge()",
+      "test": "PWA calls navigator.clearAppBadge()",
+      "expected": "D-Bus signal with count=0, count-visible=false. Badge removed from taskbar."
+    },
+    {
+      "id": "PWA-BADGE-03",
+      "category": "badging",
+      "feature": "Badge visible on KDE/GNOME taskbar",
+      "test": "Set badge count > 0, check taskbar",
+      "expected": "Badge overlay on app icon (com.canonical.Unity.LauncherEntry protocol)."
+    },
+    {
+      "id": "PWA-SHARE-01",
+      "category": "share",
+      "feature": "navigator.share({title, text, url})",
+      "test": "PWA calls navigator.share({title: 'Hi', text: 'Hello', url: 'https://example.com'})",
+      "expected": "JS polyfill emits __QAPP_CMD:share:JSON. Opens mailto: with subject=title, body=text+url."
+    },
+    {
+      "id": "PWA-SHARE-02",
+      "category": "share",
+      "feature": "navigator.canShare()",
+      "test": "PWA calls navigator.canShare()",
+      "expected": "Returns true (polyfill always returns true)."
+    },
+    {
+      "id": "PWA-OFFLINE-01",
+      "category": "offline",
+      "feature": "Online/offline detection",
+      "test": "Disconnect network while PWAPP running",
+      "expected": "PwaHelper.isOnline=false via QNetworkInformation. Red 'Offline' badge top-right (z:998)."
+    },
+    {
+      "id": "PWA-OFFLINE-02",
+      "category": "offline",
+      "feature": "Offline indicator disappears on reconnect",
+      "test": "Reconnect network",
+      "expected": "PwaHelper.isOnline=true. Badge fades out (300ms opacity animation)."
+    },
+    {
+      "id": "PWA-OFFLINE-03",
+      "category": "offline",
+      "feature": "Service worker provides offline content",
+      "test": "Load PWAPP, disconnect, navigate within app",
+      "expected": "Service worker serves cached content. App continues working offline."
+    },
+    {
+      "id": "PWA-POLYFILL-01",
+      "category": "polyfills",
+      "feature": "Polyfills injected on page load",
+      "test": "Page loads in PWAPP. Check navigator.setAppBadge exists.",
+      "expected": "After LoadSucceededStatus, polyfillScript() injected via runJavaScript()."
+    },
+    {
+      "id": "PWA-POLYFILL-02",
+      "category": "polyfills",
+      "feature": "Polyfills survive navigation",
+      "test": "Navigate to new in-scope page",
+      "expected": "Polyfills re-injected on each LoadSucceededStatus event."
+    },
+    {
+      "id": "PWA-POLYFILL-03",
+      "category": "polyfills",
+      "feature": "Console protocol parsing (__QAPP_CMD)",
+      "test": "Call console.info('__QAPP_CMD:badge:10'). Call console.log('debug').",
+      "expected": "Badge command parsed and executed. Regular console messages ignored (no action)."
+    },
+    {
+      "id": "PWA-FULLSCREEN-01",
+      "category": "fullscreen",
+      "feature": "Web-requested fullscreen",
+      "test": "PWA calls element.requestFullscreen()",
+      "expected": "Request accepted. Window goes fullscreen."
+    },
+    {
+      "id": "PWA-FULLSCREEN-02",
+      "category": "fullscreen",
+      "feature": "F11 toggles fullscreen",
+      "test": "Press F11 in any display mode",
+      "expected": "Window toggles fullscreen. Header hides in fullscreen, returns when exiting."
+    },
+    {
+      "id": "PWA-FULLSCREEN-03",
+      "category": "fullscreen",
+      "feature": "Escape exits fullscreen",
+      "test": "In fullscreen, press Escape",
+      "expected": "Exits fullscreen. Returns to normal window."
+    },
+    {
+      "id": "PWA-FULLSCREEN-04",
+      "category": "fullscreen",
+      "feature": "Fullscreen hint (one-time per appId)",
+      "test": "Enter fullscreen first time for this appId",
+      "expected": "'Press F11 to exit fullscreen' overlay. Fades after 3s (1s fade duration). z:999. Never shown again for this appId."
+    },
+    {
+      "id": "PWA-FULLSCREEN-05",
+      "category": "fullscreen",
+      "feature": "Fullscreen hint per-app isolation",
+      "test": "Show hint for appId=A. Launch appId=B, enter fullscreen.",
+      "expected": "Hint shows again for B (separate QSettings key: {appId}/hints/fullscreenHintShown)."
+    },
+    {
+      "id": "PWA-MENU-01",
+      "category": "menu",
+      "feature": "App menu items",
+      "test": "Open PwaAppMenu (F10 or hamburger)",
+      "expected": "Back, Forward, Reload, Zoom In, Zoom Out, Reset Zoom, Open in Browser, About QApp, License."
+    },
+    {
+      "id": "PWA-MENU-02",
+      "category": "menu",
+      "feature": "Back/Forward disabled when no history",
+      "test": "Fresh launch, open menu",
+      "expected": "Back disabled. Forward disabled. After navigate + go back: both enabled."
+    },
+    {
+      "id": "PWA-MENU-03",
+      "category": "menu",
+      "feature": "Open in browser",
+      "test": "Menu -> Open in Browser",
+      "expected": "Current URL opens in system default browser."
+    },
+    {
+      "id": "PWA-ZOOM-01",
+      "category": "zoom",
+      "feature": "Zoom in/out/reset via menu",
+      "test": "Menu -> Zoom In/Out/Reset",
+      "expected": "Zoom +0.1 per click (max 3.0), -0.1 (min 0.3). Reset returns to 1.0."
+    },
+    {
+      "id": "PWA-ZOOM-02",
+      "category": "zoom",
+      "feature": "Reset Zoom disabled at 1.0",
+      "test": "At default zoom, open menu",
+      "expected": "'Reset Zoom' menu item disabled when zoomFactor ~= 1.0."
+    },
+    {
+      "id": "PWA-ZOOM-03",
+      "category": "zoom",
+      "feature": "Ctrl+= and Ctrl+- zoom shortcuts",
+      "test": "Press Ctrl+=, then Ctrl+-",
+      "expected": "Zoom increases +0.1 per press. Decreases -0.1 per press."
+    },
+    {
+      "id": "PWA-ZOOM-04",
+      "category": "zoom",
+      "feature": "Ctrl+0 resets zoom",
+      "test": "Zoom in, press Ctrl+0",
+      "expected": "Zoom factor resets to 1.0."
+    },
+    {
+      "id": "PWA-UA-01",
+      "category": "user-agent",
+      "feature": "QtWebEngine removed from user agent",
+      "test": "Check navigator.userAgent in DevTools",
+      "expected": "No 'QtWebEngine/' substring. Removed via regex replace at startup."
+    },
+    {
+      "id": "PWA-PROFILE-01",
+      "category": "profile",
+      "feature": "Persistent cookies",
+      "test": "Log in. Close. Relaunch.",
+      "expected": "Still logged in. ForcePersistentCookies policy."
+    },
+    {
+      "id": "PWA-PROFILE-02",
+      "category": "profile",
+      "feature": "Disk HTTP cache",
+      "test": "Load page. Check cache exists.",
+      "expected": "DiskHttpCache enabled. storageName=appId."
+    },
+    {
+      "id": "PWA-PROFILE-03",
+      "category": "profile",
+      "feature": "Per-app isolated storage",
+      "test": "Install same PWA twice with different appIds",
+      "expected": "Separate cookies, cache, localStorage. storageName derived from appId."
+    },
+    {
+      "id": "PWA-WINDOW-01",
+      "category": "window",
+      "feature": "Window geometry persists",
+      "test": "Resize. Close. Relaunch.",
+      "expected": "Same x, y, width, height. QSettings category: appId."
+    },
+    {
+      "id": "PWA-DOWNLOAD-01",
+      "category": "download",
+      "feature": "File download with save dialog",
+      "test": "Click download link in PWA",
+      "expected": "FileDialog (SaveFile mode) opens. After save: download bar with filename + progress + cancel."
+    },
+    {
+      "id": "PWA-DOWNLOAD-02",
+      "category": "download",
+      "feature": "Cancel active download",
+      "test": "Start download, click cancel in download bar",
+      "expected": "Download cancelled. Bar disappears."
+    },
+    {
+      "id": "PWA-DOWNLOAD-03",
+      "category": "download",
+      "feature": "Download progress formatting",
+      "test": "Download large file, observe progress bar",
+      "expected": "Human-readable sizes: 'X.X MB / Y.Y MB', 'X.X KB', 'N B'."
+    },
+    {
+      "id": "PWA-DOWNLOAD-04",
+      "category": "download",
+      "feature": "Only one download at a time",
+      "test": "Start first download. Click second download link while first active.",
+      "expected": "Second download cancelled. Only first proceeds."
+    },
+    {
+      "id": "PWA-LIFECYCLE-01",
+      "category": "lifecycle",
+      "feature": "Resume overlay and reactivation",
+      "test": "Switch away >500ms, switch back",
+      "expected": "Resume overlay shows (z:900). WebEngine lifecycleState set to Active (0). forceActiveFocus() called. Overlay auto-fades after 2s."
+    },
+    {
+      "id": "PWA-LIFECYCLE-02",
+      "category": "lifecycle",
+      "feature": "No false resume on quick switch",
+      "test": "Alt-tab quickly (<500ms) and back",
+      "expected": "No overlay shown (500ms threshold prevents flicker)."
+    },
+    {
+      "id": "PWA-JSHEAP-01",
+      "category": "performance",
+      "feature": "Configurable JS heap size",
+      "test": "Set profile/jsHeapSizeMB=8192 in QSettings. Relaunch.",
+      "expected": "QTWEBENGINE_CHROMIUM_FLAGS includes --max-old-space-size=8192. Default: 4096 MB."
+    },
+    {
+      "id": "PWA-DEV-01",
+      "category": "dev",
+      "feature": "Remote debugging in dev build",
+      "test": "Build with QAPP_DEV_BUILD=ON. Launch. Open localhost:9223.",
+      "expected": "DevTools available on port 9223."
+    },
+    {
+      "id": "PWA-DEV-02",
+      "category": "dev",
+      "feature": "QML disk cache disabled in dev build",
+      "test": "Build with QAPP_DEV_BUILD=ON",
+      "expected": "QML_DISABLE_DISK_CACHE=1 set. QML changes visible without rebuild."
+    },
+    {
+      "id": "PWA-F10-01",
+      "category": "keyboard",
+      "feature": "F10 opens menu",
+      "test": "Press F10",
+      "expected": "PwaAppMenu opens as popup."
+    }
+  ]
+}
