@@ -1,24 +1,70 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 project(qapp-framework VERSION 0.1.0 LANGUAGES CXX)
+
+# --- Build fingerprint from git ---
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE QAPP_GIT_SHA
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+execute_process(
+    COMMAND git diff --quiet HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE QAPP_GIT_DIRTY
+)
+if(QAPP_GIT_DIRTY)
+    set(QAPP_GIT_SHA "${QAPP_GIT_SHA}-dirty")
+endif()
+if(NOT QAPP_GIT_SHA)
+    set(QAPP_GIT_SHA "unknown")
+endif()
+message(STATUS "Build SHA: ${QAPP_GIT_SHA}")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Widgets WebEngineQuick Network DBus Test)
+find_package(Qt6 6.5 REQUIRED COMPONENTS
+    Core Gui Qml Quick QuickControls2 Widgets WebEngineQuick Network DBus QmlImportScanner)
 
-# --- qapp-common: shared static library (namespace qapp::) ---
-qt_add_library(qapp-common STATIC
-    common/cpp/qapp-common.cpp
-    common/cpp/config-reader.cpp
-    common/cpp/xdg-paths.cpp
-    common/cpp/url-helpers.cpp
-    common/cpp/desktop-entry.cpp
-    common/cpp/app-metadata.cpp
-    common/cpp/html-parser.cpp
-    common/cpp/manifest-parser.cpp
-    common/cpp/icon-manager.cpp
+# --- CXX-Qt CMake integration (lightweight cmake-only repo) ---
+find_package(CxxQt QUIET)
+if(NOT CxxQt_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        CxxQt
+        GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
+        GIT_TAG 0.7.3
+    )
+    FetchContent_MakeAvailable(CxxQt)
+endif()
+
+# --- Import Rust crates via CXX-Qt + Corrosion ---
+cxx_qt_import_crate(
+    MANIFEST_PATH ${CMAKE_SOURCE_DIR}/Cargo.toml
+    CRATES qapp_installer qapp_ws_wrapper qapp_pwa_app
+    QT_MODULES Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2
+               Qt6::Network Qt6::Widgets Qt6::WebEngineQuick
 )
+
+# Import QML modules exported by each Rust crate
+# Note: Corrosion normalizes hyphens to underscores in target names
+cxx_qt_import_qml_module(qapp_installer_qml
+    URI "QApp.Installer"
+    SOURCE_CRATE qapp_installer)
+
+cxx_qt_import_qml_module(qapp_ws_wrapper_qml
+    URI "QApp.WS"
+    SOURCE_CRATE qapp_ws_wrapper)
+
+cxx_qt_import_qml_module(qapp_pwa_app_qml
+    URI "QApp.PWA"
+    SOURCE_CRATE qapp_pwa_app)
+
+# --- qapp-common: shared QML module (pure QML, no Rust) ---
+qt_add_library(qapp-common-qml STATIC)
 
 set_source_files_properties(common/qml/QAppAboutDialog.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/QAppAboutDialog.qml)
@@ -29,7 +75,7 @@ set_source_files_properties(common/qml/QAppDownloadBar.qml
 set_source_files_properties(common/qml/QAppResumeOverlay.qml
     PROPERTIES QT_RESOURCE_ALIAS qml/QAppResumeOverlay.qml)
 
-qt_add_qml_module(qapp-common
+qt_add_qml_module(qapp-common-qml
     URI QApp.Common
     VERSION 1.0
     QML_FILES
@@ -39,210 +85,102 @@ qt_add_qml_module(qapp-common
         common/qml/QAppResumeOverlay.qml
 )
 
-target_include_directories(qapp-common PUBLIC ${CMAKE_SOURCE_DIR}/common/cpp)
+target_link_libraries(qapp-common-qml PUBLIC Qt6::Core Qt6::Gui Qt6::Quick)
 
-target_link_libraries(qapp-common PUBLIC
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Quick
-)
+# --- qapp-qt-helpers: thin C++ wrappers around Qt APIs for Rust FFI ---
+# OBJECT library ensures .o files are included directly (avoids static lib link order issues
+# with CXX-generated code in Rust static libraries that reference these symbols)
+add_library(qapp-qt-helpers OBJECT cpp/qt-helpers.cpp)
+target_include_directories(qapp-qt-helpers PUBLIC ${CMAKE_SOURCE_DIR}/cpp)
+target_link_libraries(qapp-qt-helpers PUBLIC Qt6::Core Qt6::DBus Qt6::Network Qt6::Gui Qt6::WebEngineQuick)
 
-# --- qapp-installer: system UI (namespace qapp::installer::) ---
-qt_add_executable(qapp-installer
-    installer/cpp/main.cpp
-    installer/cpp/site-classifier.hpp
-    installer/cpp/site-classifier.cpp
-    installer/cpp/classify-pipeline.hpp
-    installer/cpp/classify-pipeline.cpp
-    installer/cpp/app-manager.hpp
-    installer/cpp/app-manager.cpp
-    installer/cpp/web-fetcher.hpp
-    installer/cpp/web-fetcher.cpp
-)
+# --- Build option ---
+option(QAPP_DEV_BUILD "Mark as development build" OFF)
 
-# Strip binary subdir prefix from resource aliases so paths match main.cpp
-set_source_files_properties(installer/qml/main.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/main.qml)
-set_source_files_properties(installer/qml/InstallerInstallTab.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/InstallerInstallTab.qml)
-set_source_files_properties(installer/qml/InstallerResultsPanel.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/InstallerResultsPanel.qml)
-set_source_files_properties(installer/qml/InstallerManageTab.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/InstallerManageTab.qml)
-set_source_files_properties(installer/qml/InstallerUpdateDialog.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/InstallerUpdateDialog.qml)
+# --- qapp-installer binary ---
+add_executable(qapp-installer-exe cpp/installer-main.cpp)
+set_target_properties(qapp-installer-exe PROPERTIES OUTPUT_NAME qapp-installer)
 
 set_source_files_properties(assets/icons/qapp-dark-500.png
     PROPERTIES QT_RESOURCE_ALIAS icons/qapp-dark-500.png)
 set_source_files_properties(assets/icons/qapp-top-dark-500.png
     PROPERTIES QT_RESOURCE_ALIAS icons/qapp-top-dark-500.png)
 
-qt_add_qml_module(qapp-installer
-    URI QApp.Installer
-    VERSION 1.0
-    QML_FILES
-        installer/qml/main.qml
-        installer/qml/InstallerInstallTab.qml
-        installer/qml/InstallerResultsPanel.qml
-        installer/qml/InstallerManageTab.qml
-        installer/qml/InstallerUpdateDialog.qml
-    RESOURCES
+qt_add_resources(qapp-installer-exe "installer_assets"
+    PREFIX "/QApp/Installer"
+    FILES
         assets/icons/qapp-dark-500.png
         assets/icons/qapp-top-dark-500.png
 )
 
-target_include_directories(qapp-installer PRIVATE ${CMAKE_SOURCE_DIR}/installer/cpp)
-
-option(QAPP_DEV_BUILD "Mark as development build" OFF)
 if(QAPP_DEV_BUILD)
-    target_compile_definitions(qapp-installer PRIVATE QAPP_APP_NAME="QApp Dev" QAPP_APP_ID="qapp-installer-dev" QAPP_VERSION="${PROJECT_VERSION}")
+    target_compile_definitions(qapp-installer-exe PRIVATE
+        QAPP_APP_NAME="QApp Dev" QAPP_APP_ID="qapp-installer-dev"
+        QAPP_VERSION="${PROJECT_VERSION}" QAPP_BUILD_SHA="${QAPP_GIT_SHA}"
+        QAPP_DEV_BUILD)
 else()
-    target_compile_definitions(qapp-installer PRIVATE QAPP_APP_NAME="QApp" QAPP_APP_ID="qapp-installer" QAPP_VERSION="${PROJECT_VERSION}")
+    target_compile_definitions(qapp-installer-exe PRIVATE
+        QAPP_APP_NAME="QApp" QAPP_APP_ID="qapp-installer"
+        QAPP_VERSION="${PROJECT_VERSION}" QAPP_BUILD_SHA="${QAPP_GIT_SHA}")
 endif()
 
-target_link_libraries(qapp-installer PRIVATE
-    qapp-common
-    qapp-commonplugin
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Quick
-    Qt6::QuickControls2
-    Qt6::Widgets
-    Qt6::WebEngineQuick
-    Qt6::Network
+target_link_libraries(qapp-installer-exe PRIVATE
+    qapp_installer_qml
+    qapp-common-qml
+    qapp-common-qmlplugin
+    qapp-qt-helpers
+    Qt6::Widgets Qt6::WebEngineQuick Qt6::QuickControls2
 )
+qt_import_qml_plugins(qapp-installer-exe)
 
-# --- qapp-ws-wrapper: per-app shell for WS/WAPP (namespace qapp::ws::) ---
-qt_add_executable(qapp-ws-wrapper
-    ws-wrapper/cpp/qapp-ws-wrapper-main.cpp
-    ws-wrapper/cpp/wrapper-helper.hpp
-    ws-wrapper/cpp/wrapper-helper.cpp
-)
-
-target_include_directories(qapp-ws-wrapper PRIVATE ${CMAKE_SOURCE_DIR}/ws-wrapper/cpp)
-
-set_source_files_properties(ws-wrapper/qml/wrapper.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/wrapper.qml)
-set_source_files_properties(ws-wrapper/qml/WrapperTab.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperTab.qml)
-set_source_files_properties(ws-wrapper/qml/WrapperHeader.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperHeader.qml)
-set_source_files_properties(ws-wrapper/qml/WrapperTabView.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperTabView.qml)
-set_source_files_properties(ws-wrapper/qml/WrapperSettingsDialog.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperSettingsDialog.qml)
-set_source_files_properties(ws-wrapper/qml/WrapperSaveDialog.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperSaveDialog.qml)
-set_source_files_properties(ws-wrapper/qml/WrapperFullscreenHint.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/WrapperFullscreenHint.qml)
-
-qt_add_qml_module(qapp-ws-wrapper
-    URI QApp.WS
-    VERSION 1.0
-    QML_FILES
-        ws-wrapper/qml/wrapper.qml
-        ws-wrapper/qml/WrapperTab.qml
-        ws-wrapper/qml/WrapperHeader.qml
-        ws-wrapper/qml/WrapperTabView.qml
-        ws-wrapper/qml/WrapperSettingsDialog.qml
-        ws-wrapper/qml/WrapperSaveDialog.qml
-        ws-wrapper/qml/WrapperFullscreenHint.qml
-)
+# --- qapp-ws-wrapper binary ---
+add_executable(qapp-ws-wrapper-exe cpp/ws-wrapper-main.cpp)
+set_target_properties(qapp-ws-wrapper-exe PROPERTIES OUTPUT_NAME qapp-ws-wrapper)
 
 if(QAPP_DEV_BUILD)
-    target_compile_definitions(qapp-ws-wrapper PRIVATE QAPP_APP_NAME="QApp Dev" QAPP_DEV_BUILD)
+    target_compile_definitions(qapp-ws-wrapper-exe PRIVATE
+        QAPP_APP_NAME="QApp Dev" QAPP_VERSION="${PROJECT_VERSION}"
+        QAPP_BUILD_SHA="${QAPP_GIT_SHA}" QAPP_DEV_BUILD)
 else()
-    target_compile_definitions(qapp-ws-wrapper PRIVATE QAPP_APP_NAME="QApp")
+    target_compile_definitions(qapp-ws-wrapper-exe PRIVATE
+        QAPP_APP_NAME="QApp" QAPP_VERSION="${PROJECT_VERSION}"
+        QAPP_BUILD_SHA="${QAPP_GIT_SHA}")
 endif()
 
-target_link_libraries(qapp-ws-wrapper PRIVATE
-    qapp-common
-    qapp-commonplugin
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Quick
-    Qt6::Widgets
-    Qt6::WebEngineQuick
+target_link_libraries(qapp-ws-wrapper-exe PRIVATE
+    qapp_ws_wrapper_qml
+    qapp-common-qml
+    qapp-common-qmlplugin
+    qapp-qt-helpers
+    Qt6::Widgets Qt6::WebEngineQuick
 )
+qt_import_qml_plugins(qapp-ws-wrapper-exe)
 
-# --- qapp-pwa-app: per-app shell for PWA (namespace qapp::pwa::) ---
-qt_add_executable(qapp-pwa-app
-    pwa-app/cpp/qapp-pwa-app-main.cpp
-    pwa-app/cpp/pwa-helper.hpp
-    pwa-app/cpp/pwa-helper.cpp
-    pwa-app/cpp/pwa-permission-handler.hpp
-    pwa-app/cpp/pwa-permission-handler.cpp
-    pwa-app/cpp/pwa-notification-handler.hpp
-    pwa-app/cpp/pwa-notification-handler.cpp
-    pwa-app/cpp/pwa-os-integration.hpp
-    pwa-app/cpp/pwa-os-integration.cpp
-)
-
-target_include_directories(qapp-pwa-app PRIVATE ${CMAKE_SOURCE_DIR}/pwa-app/cpp)
-
-set_source_files_properties(pwa-app/qml/pwa-app.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/pwa-app.qml)
-set_source_files_properties(pwa-app/qml/PwaAppMenu.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/PwaAppMenu.qml)
-set_source_files_properties(pwa-app/qml/PwaFullscreenHint.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/PwaFullscreenHint.qml)
-set_source_files_properties(pwa-app/qml/PwaSplashScreen.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/PwaSplashScreen.qml)
-set_source_files_properties(pwa-app/qml/PwaToolbar.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/PwaToolbar.qml)
-set_source_files_properties(pwa-app/qml/PwaOfflineIndicator.qml
-    PROPERTIES QT_RESOURCE_ALIAS qml/PwaOfflineIndicator.qml)
-
-qt_add_qml_module(qapp-pwa-app
-    URI QApp.PWA
-    VERSION 1.0
-    QML_FILES
-        pwa-app/qml/pwa-app.qml
-        pwa-app/qml/PwaAppMenu.qml
-        pwa-app/qml/PwaFullscreenHint.qml
-        pwa-app/qml/PwaSplashScreen.qml
-        pwa-app/qml/PwaToolbar.qml
-        pwa-app/qml/PwaOfflineIndicator.qml
-)
+# --- qapp-pwa-app binary ---
+add_executable(qapp-pwa-app-exe cpp/pwa-app-main.cpp)
+set_target_properties(qapp-pwa-app-exe PROPERTIES OUTPUT_NAME qapp-pwa-app)
 
 if(QAPP_DEV_BUILD)
-    target_compile_definitions(qapp-pwa-app PRIVATE QAPP_APP_NAME="QApp Dev" QAPP_DEV_BUILD)
+    target_compile_definitions(qapp-pwa-app-exe PRIVATE
+        QAPP_APP_NAME="QApp Dev" QAPP_VERSION="${PROJECT_VERSION}"
+        QAPP_BUILD_SHA="${QAPP_GIT_SHA}" QAPP_DEV_BUILD)
 else()
-    target_compile_definitions(qapp-pwa-app PRIVATE QAPP_APP_NAME="QApp")
+    target_compile_definitions(qapp-pwa-app-exe PRIVATE
+        QAPP_APP_NAME="QApp" QAPP_VERSION="${PROJECT_VERSION}"
+        QAPP_BUILD_SHA="${QAPP_GIT_SHA}")
 endif()
 
-target_link_libraries(qapp-pwa-app PRIVATE
-    qapp-common
-    qapp-commonplugin
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Quick
-    Qt6::Widgets
-    Qt6::WebEngineQuick
-    Qt6::Network
-    Qt6::DBus
+target_link_libraries(qapp-pwa-app-exe PRIVATE
+    qapp_pwa_app_qml
+    qapp-common-qml
+    qapp-common-qmlplugin
+    qapp-qt-helpers
+    Qt6::Widgets Qt6::WebEngineQuick Qt6::Network
 )
-
-# --- Tests (QTest) ---
-enable_testing()
-
-function(qapp_add_test name)
-    qt_add_executable(${name} tests/${name}.cpp)
-    target_link_libraries(${name} PRIVATE qapp-common Qt6::Test)
-    add_test(NAME ${name} COMMAND ${name})
-endfunction()
-
-qapp_add_test(test-config-reader)
-qapp_add_test(test-xdg-paths)
-qapp_add_test(test-url-helpers)
-qapp_add_test(test-desktop-entry)
-qapp_add_test(test-app-metadata)
-qapp_add_test(test-html-parser)
-qapp_add_test(test-manifest-parser)
-qapp_add_test(test-icon-manager)
+qt_import_qml_plugins(qapp-pwa-app-exe)
 
 # --- Install targets ---
-install(TARGETS qapp-installer qapp-ws-wrapper qapp-pwa-app
+install(TARGETS qapp-installer-exe qapp-ws-wrapper-exe qapp-pwa-app-exe
     RUNTIME DESTINATION bin)
 
 install(PROGRAMS bin/update.sh

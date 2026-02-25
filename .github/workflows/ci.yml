@@ -17,6 +17,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify clean checkout
+        run: |
+          if ! git diff --quiet HEAD; then
+            echo "::error::Dirty working tree — cannot build for release"
+            exit 1
+          fi
+
+      - name: Validate version (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+          # Check this version hasn't been released before
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "::error::Version $TAG already released. Bump the version before tagging."
+            exit 1
+          fi
+          echo "Version $VERSION — not previously released. Proceeding."
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -36,7 +60,15 @@ jobs:
           cache: true
 
       - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: |
+          if [ -n "${VERSION:-}" ]; then
+            # Tag build: inject version from git tag into binary
+            cmake -B build -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PROJECT_VERSION="$VERSION"
+          else
+            # Branch build: use version from CMakeLists.txt
+            cmake -B build -DCMAKE_BUILD_TYPE=Release
+          fi
 
       - name: Build
         run: cmake --build build --parallel

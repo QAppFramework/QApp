@@ -1,0 +1,44 @@
+{
+  "INS-CLI-01": {
+    "feature": "Classify URL via CLI",
+    "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT; stdout is not valid JSON: ",
+    "first_seen": "20260225T094825Z",
+    "last_seen": "20260225T094825Z"
+  },
+  "INS-CLI-04": {
+    "feature": "Classify plain website via CLI",
+    "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT; stdout is not valid JSON: ",
+    "first_seen": "20260225T094925Z",
+    "last_seen": "20260225T094925Z"
+  },
+  "INS-CLI-05": {
+    "feature": "Install app via CLI",
+    "detail": "install exit=-1, stderr=TIMEOUT",
+    "first_seen": "20260225T095055Z",
+    "last_seen": "20260225T095055Z"
+  },
+  "INS-CLI-07": {
+    "feature": "List installed apps via CLI",
+    "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT; stdout is not valid JSON: ",
+    "first_seen": "20260225T095155Z",
+    "last_seen": "20260225T095155Z"
+  },
+  "INS-CLI-09": {
+    "feature": "Version flag",
+    "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT",
+    "first_seen": "20260225T095255Z",
+    "last_seen": "20260225T095255Z"
+  },
+  "INS-CLI-10": {
+    "feature": "Help flag",
+    "detail": "exit_code: got -1, expected 0; stderr: TIMEOUT; stdout missing: '--classify'; stdout missing: '--install'",
+    "first_seen": "20260225T095355Z",
+    "last_seen": "20260225T095355Z"
+  },
+  "INS-INSTALL-01": {
+    "feature": "App ID generation from URL",
+    "detail": "classify exit=-1",
+    "first_seen": "20260225T095455Z",
+    "last_seen": "20260225T095455Z"
+  }
+}

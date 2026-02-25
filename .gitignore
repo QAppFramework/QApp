@@ -1,17 +1,7 @@
-# Build output
-build/
-dist/
-
-# Dependencies
-node_modules/
-
-# Environment
-.env
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+/target/
+/build/
+*.o
+*.so
+*.a
+*.dylib
+.cache/

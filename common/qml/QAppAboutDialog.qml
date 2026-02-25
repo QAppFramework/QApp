@@ -31,7 +31,7 @@ Dialog {
         }
 
         Label {
-            text: "Version 0.1.0-alpha"
+            text: "Version " + Qt.application.version
             font.pixelSize: 11
             opacity: 0.5
             Layout.alignment: Qt.AlignHCenter

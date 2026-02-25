@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = [
+    "rust/qapp-common",
+    "rust/qapp-installer",
+    "rust/qapp-ws-wrapper",
+    "rust/qapp-pwa-app",
+]

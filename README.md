@@ -1,20 +1,32 @@
 # QApp
 
-Turn any website into a standalone desktop app.
+Turn any website into a standalone desktop app. Replace Chrome's fragile desktop
+shortcuts with truly standalone apps that survive browser removal.
 
 ## Install
+
+Download the latest `.deb` from [GitHub Releases](https://github.com/QAppFramework/QApp/releases) and install:
+
+```bash
+sudo dpkg -i qapp-framework-*.deb
+```
+
+### Build from source (developers)
 
 ```bash
 git clone https://github.com/QAppFramework/QApp.git
 cd QApp
-bash install.sh
+cmake -B build && cmake --build build
+sudo cmake --install build
 ```
 
-## Requirements
+Requires: cmake, Rust (stable), Qt 6.5+ (qt6-base-dev, qt6-declarative-dev, qt6-webengine-dev)
 
-- Linux (KDE/GNOME)
-- Qt 6.5+ (qt6-base-dev, qt6-declarative-dev, qt6-webengine-dev)
-- cmake, g++
+## Three Products
+
+- **QApp** — Manager. Installs and administers web apps. Can be removed without breaking installed apps.
+- **QAppWS** — Website wrapper. Any website in its own window with tabs and bookmarks.
+- **QAppPWA** — Web App shell. Manifest-driven apps with offline, push, badges, and permissions.
 
 ## License
 
